@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/phone_sign_in_page.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/signup_page.dart';
-import 'package:gitakshmi_hrms_app/features/leave/presentation/pages/leave_page.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/pages/dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -30,21 +30,19 @@ class _LoginPageState extends State<LoginPage> {
         emailError = "Email is required";
       } else if (!emailController.text.contains("@")) {
         emailError = "Enter valid email address";
-      } else if (emailController.text.trim() != "tanvi@gmail.com") {
-        emailError = "Email doesn't registered to any account";
       }
 
       if (passwordController.text.trim().isEmpty) {
         passwordError = "Password is required";
-      } else if (passwordController.text != "123456") {
-        passwordError = "Invalid password";
+      } else if (passwordController.text.trim().length < 6) {
+        passwordError = "Password must be at least 6 characters";
       }
     });
 
     if (emailError == null && passwordError == null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LeaveSummaryScreen()),
+        MaterialPageRoute(builder: (context) => const DashboardPage()),
       );
     }
   }

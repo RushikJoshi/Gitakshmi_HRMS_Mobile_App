@@ -8,7 +8,13 @@ import 'package:gitakshmi_hrms_app/features/notification/presentation/pages/noti
 import 'package:gitakshmi_hrms_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/login_page.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_drawer.dart';
-import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_home_view.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_header_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_stat_grid.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_punch_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_active_session_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_work_hours_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_daily_tasks_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_log_timeline_card.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -20,6 +26,67 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _bottomIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Widget _buildHomeView(CompanyConfig config, RolePermissionHelper helper, List<String> permissions) {
+    final activeEmp = helper.activeEmployee;
+    // Get designation from employee role
+    final role = helper.roles.firstWhere(
+      (r) => r.id == activeEmp.roleId,
+      orElse: () => helper.roles.first,
+    );
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // New Premium Header Card
+          DashboardHeaderCard(
+            userName: activeEmp.name,
+            designation: role.name,
+          ),
+
+          const SizedBox(height: 20),
+
+          // Stats Grid (overlapping slightly on header)
+          const DashboardStatGrid(),
+
+          const SizedBox(height: 20),
+
+          // Punch In/Out Card
+          DashboardPunchCard(
+            onNavigateTab: (index) {
+              setState(() {
+                _bottomIndex = index;
+              });
+            },
+          ),
+
+          const SizedBox(height: 20),
+
+          // Active Session Card
+          const DashboardActiveSessionCard(),
+
+          const SizedBox(height: 20),
+
+          // Work Hours Bar Chart Card
+          const DashboardWorkHoursCard(),
+
+          const SizedBox(height: 20),
+
+          // Daily Tasks Card
+          const DashboardDailyTasksCard(),
+
+          const SizedBox(height: 20),
+
+          // Log Timeline Card
+          const DashboardLogTimelineCard(),
+
+          const SizedBox(height: 30),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,16 +110,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             // Dynamically build bottom nav tabs
             final List<Widget> pages = [
-              DashboardHomeView(
-                config: config,
-                helper: helper,
-                permissions: permissions,
-                onNavigateTab: (index) {
-                  setState(() {
-                    _bottomIndex = index;
-                  });
-                },
-              ),
+              _buildHomeView(config, helper, permissions),
               const AttendancePage(),
               if (canApprove) const ApprovalsPage(),
               const NotificationPage(),

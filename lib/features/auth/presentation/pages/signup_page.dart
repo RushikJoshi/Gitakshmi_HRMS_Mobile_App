@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/login_page.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/pages/dashboard_page.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
