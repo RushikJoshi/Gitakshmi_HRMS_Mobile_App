@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
 import 'package:gitakshmi_hrms_app/features/attendance/presentation/pages/attendance_page.dart';
-import 'package:gitakshmi_hrms_app/features/approvals/presentation/pages/approvals_page.dart';
 import 'package:gitakshmi_hrms_app/features/notification/presentation/pages/notification_page.dart';
 import 'package:gitakshmi_hrms_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_drawer.dart';
@@ -25,7 +25,9 @@ class _DashboardPageState extends State<DashboardPage> {
   int _bottomIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  Widget _buildHomeView(CompanyConfig config, RolePermissionHelper helper, List<String> permissions) {
+  // ── Pages ────────────────────────────────────────────────────────────────
+  Widget _buildHomeView(
+      CompanyConfig config, RolePermissionHelper helper, List<String> permissions) {
     final activeEmp = helper.activeEmployee;
     final role = helper.roles.firstWhere(
       (r) => r.id == activeEmp.roleId,
@@ -41,12 +43,10 @@ class _DashboardPageState extends State<DashboardPage> {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              // Layer 1: Blue gradient header
               DashboardHeaderCard(
                 userName: activeEmp.name,
                 designation: role.name,
               ),
-              // Layer 2: Stat grid overlapping the bottom of the header
               Positioned(
                 top: 140,
                 left: 0,
@@ -55,45 +55,63 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ],
           ),
-          // Compensation space so next widget starts below the stat grid
-          // (statGrid starts at 110 + ~220 height = 330; Stack = 160; delta = 170 + 20 gap)
           const SizedBox(height: 110),
 
-          // Punch In/Out Card
           DashboardPunchCard(
-            onNavigateTab: (index) {
-              setState(() {
-                _bottomIndex = index;
-              });
-            },
+            onNavigateTab: (index) => setState(() => _bottomIndex = index),
           ),
-
           const SizedBox(height: 20),
-
-          // Active Session Card
           const DashboardActiveSessionCard(),
-
           const SizedBox(height: 20),
-
-          // Work Hours Bar Chart Card
           const DashboardWorkHoursCard(),
-
           const SizedBox(height: 20),
-
-          // Daily Tasks Card
           const DashboardDailyTasksCard(),
-
           const SizedBox(height: 20),
-
-          // Log Timeline Card
           const DashboardLogTimelineCard(),
-
           const SizedBox(height: 30),
         ],
       ),
     );
   }
 
+  // ── Custom Nav Item ──────────────────────────────────────────────────────
+  Widget _buildNavItem({
+    required int index,
+    required IconData activeIcon,
+    required IconData inactiveIcon,
+    required String label,
+    required Color activeColor,
+  }) {
+    final bool isActive = _bottomIndex == index;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => setState(() => _bottomIndex = index),
+      child: SizedBox(
+        width: 72,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isActive ? activeIcon : inactiveIcon,
+              color: isActive ? activeColor : Colors.grey.shade400,
+              size: 24,
+            ),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: isActive ? activeColor : Colors.grey.shade400,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Build ────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final helper = RolePermissionHelper.instance;
@@ -111,30 +129,18 @@ class _DashboardPageState extends State<DashboardPage> {
             final activeEmp = helper.activeEmployee;
             final permissions = helper.getFinalPermissions(activeEmp.id);
 
-            // Dynamic Permissions verification based on computed set
-            final canApprove = permissions.contains('approve_leave') || permissions.contains('approve_request');
-
-            // Dynamically build bottom nav tabs
+            // 4 pages: Home | Attendance | Notifications | Profile
             final List<Widget> pages = [
               _buildHomeView(config, helper, permissions),
               const AttendancePage(),
-              if (canApprove) const ApprovalsPage(),
               const NotificationPage(),
               const ProfilePage(),
             ];
 
-            final List<BottomNavigationBarItem> navItems = [
-              const BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-              const BottomNavigationBarItem(icon: Icon(Icons.fingerprint_rounded), label: 'Attendance'),
-              if (canApprove) const BottomNavigationBarItem(icon: Icon(Icons.assignment_turned_in_rounded), label: 'Approvals'),
-              const BottomNavigationBarItem(icon: Icon(Icons.notifications_rounded), label: 'Alerts'),
-              const BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
-            ];
+            if (_bottomIndex >= pages.length) _bottomIndex = 0;
 
-            // Safeguard bottom index bounds when permissions change dynamically
-            if (_bottomIndex >= pages.length) {
-              _bottomIndex = 0;
-            }
+            // Nav bar dark navy color (matching screenshot)
+            const navActiveColor = AppColors.blue600;
 
             return Scaffold(
               key: _scaffoldKey,
@@ -145,18 +151,80 @@ class _DashboardPageState extends State<DashboardPage> {
                 permissions: permissions,
               ),
               body: pages[_bottomIndex],
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: _bottomIndex,
-                onTap: (index) {
-                  setState(() {
-                    _bottomIndex = index;
-                  });
-                },
-                type: BottomNavigationBarType.fixed,
-                selectedItemColor: primaryColor,
-                unselectedItemColor: Colors.grey.shade400,
-                showUnselectedLabels: true,
-                items: navItems,
+
+              // ── Center FAB (notched circular button) ──────────────────
+              floatingActionButton: Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.blue600,
+
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                    child: const Icon(
+                      Icons.grid_view_rounded,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                  ),
+                ),
+              ),
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.centerDocked,
+
+              // ── Custom Notched Bottom Nav Bar ─────────────────────────
+              bottomNavigationBar: BottomAppBar(
+                shape: const CircularNotchedRectangle(),
+                notchMargin: 8,
+                color: Colors.white,
+                elevation: 12,
+                padding: EdgeInsets.zero,
+                child: SizedBox(
+                  height: 60,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Left side
+                      _buildNavItem(
+                        index: 0,
+                        activeIcon: Icons.home_rounded,
+                        inactiveIcon: Icons.home_outlined,
+                        label: 'Home',
+                        activeColor: navActiveColor,
+                      ),
+                      _buildNavItem(
+                        index: 1,
+                        activeIcon: Icons.fingerprint_rounded,
+                        inactiveIcon: Icons.fingerprint_rounded,
+                        label: 'Attendance',
+                        activeColor: navActiveColor,
+                      ),
+                      // Space for FAB
+                      const SizedBox(width: 58),
+                      // Right side
+                      _buildNavItem(
+                        index: 2,
+                        activeIcon: Icons.notifications_rounded,
+                        inactiveIcon: Icons.notifications_outlined,
+                        label: 'Alerts',
+                        activeColor: navActiveColor,
+                      ),
+                      _buildNavItem(
+                        index: 3,
+                        activeIcon: Icons.person_rounded,
+                        inactiveIcon: Icons.person_outlined,
+                        label: 'Profile',
+                        activeColor: navActiveColor,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             );
           },
