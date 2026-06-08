@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
 import 'package:gitakshmi_hrms_app/features/attendance/presentation/pages/attendance_page.dart';
 import 'package:gitakshmi_hrms_app/features/approvals/presentation/pages/approvals_page.dart';
 import 'package:gitakshmi_hrms_app/features/notification/presentation/pages/notification_page.dart';
 import 'package:gitakshmi_hrms_app/features/profile/presentation/pages/profile_page.dart';
-import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/login_page.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_drawer.dart';
-import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_home_view.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_header_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_stat_grid.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_punch_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_active_session_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_work_hours_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_daily_tasks_card.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_log_timeline_card.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -20,6 +24,75 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _bottomIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Widget _buildHomeView(CompanyConfig config, RolePermissionHelper helper, List<String> permissions) {
+    final activeEmp = helper.activeEmployee;
+    final role = helper.roles.firstWhere(
+      (r) => r.id == activeEmp.roleId,
+      orElse: () => helper.roles.first,
+    );
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Stack: Blue header + overlapping Stat Grid card ──
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Layer 1: Blue gradient header
+              DashboardHeaderCard(
+                userName: activeEmp.name,
+                designation: role.name,
+              ),
+              // Layer 2: Stat grid overlapping the bottom of the header
+              Positioned(
+                top: 140,
+                left: 0,
+                right: 0,
+                child: const DashboardStatGrid(),
+              ),
+            ],
+          ),
+          // Compensation space so next widget starts below the stat grid
+          // (statGrid starts at 110 + ~220 height = 330; Stack = 160; delta = 170 + 20 gap)
+          const SizedBox(height: 110),
+
+          // Punch In/Out Card
+          DashboardPunchCard(
+            onNavigateTab: (index) {
+              setState(() {
+                _bottomIndex = index;
+              });
+            },
+          ),
+
+          const SizedBox(height: 20),
+
+          // Active Session Card
+          const DashboardActiveSessionCard(),
+
+          const SizedBox(height: 20),
+
+          // Work Hours Bar Chart Card
+          const DashboardWorkHoursCard(),
+
+          const SizedBox(height: 20),
+
+          // Daily Tasks Card
+          const DashboardDailyTasksCard(),
+
+          const SizedBox(height: 20),
+
+          // Log Timeline Card
+          const DashboardLogTimelineCard(),
+
+          const SizedBox(height: 30),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,16 +116,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             // Dynamically build bottom nav tabs
             final List<Widget> pages = [
-              DashboardHomeView(
-                config: config,
-                helper: helper,
-                permissions: permissions,
-                onNavigateTab: (index) {
-                  setState(() {
-                    _bottomIndex = index;
-                  });
-                },
-              ),
+              _buildHomeView(config, helper, permissions),
               const AttendancePage(),
               if (canApprove) const ApprovalsPage(),
               const NotificationPage(),
@@ -74,33 +138,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
             return Scaffold(
               key: _scaffoldKey,
-              appBar: AppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                ),
-                title: Text(
-                  _bottomIndex == 0
-                      ? config.appName
-                      : _bottomIndex == 1
-                          ? 'Smart Attendance'
-                          : _bottomIndex == 2 && canApprove
-                              ? 'Workflow Approvals'
-                              : _bottomIndex == (canApprove ? 3 : 2)
-                                  ? 'Notifications'
-                                  : 'Profile',
-                ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.power_settings_new_rounded, color: AppColors.error),
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => const LoginPage()),
-                      );
-                    },
-                  ),
-                ],
-              ),
               drawer: DashboardDrawer(
                 config: config,
                 helper: helper,
