@@ -95,7 +95,7 @@ class DashboardHeaderCard extends StatelessWidget {
                       width: 90,
                       height: 90,
                       child: Image.asset(
-                        'assets/images/Clock.png',
+                        'assets/images/clock.png',
                         fit: BoxFit.contain,
                       ),
                     ),

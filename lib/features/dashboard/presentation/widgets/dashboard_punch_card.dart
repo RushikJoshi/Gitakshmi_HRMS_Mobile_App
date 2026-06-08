@@ -116,17 +116,17 @@ class DashboardPunchCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildTimelineMini(
-                    iconPath: 'assets/icons/punch in.png',
+                    iconPath: 'assets/icons/punch_in.png',
                     time: '09:08 AM',
                     label: 'Punch In',
                   ),
                   _buildTimelineMini(
-                    iconPath: 'assets/icons/punch out.png',
+                    iconPath: 'assets/icons/punch_out.png',
                     time: '06:05 PM',
                     label: 'Punch Out',
                   ),
                   _buildTimelineMini(
-                    iconPath: 'assets/icons/total hour.png',
+                    iconPath: 'assets/icons/total_hour.png',
                     time: '08:13',
                     label: 'Total Hours',
                   ),
@@ -159,20 +159,26 @@ class DashboardPunchCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: AppColors.baseWhite,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.baseWhite,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
+            const SizedBox(width: 8),
             Transform.scale(
               scaleX: flipIcon ? -1 : 1,
               child: Image.asset(
                 iconPath,
                 width: 22,
                 height: 22,
+                fit: BoxFit.contain,
                 color: AppColors.baseWhite,
               ),
             ),
