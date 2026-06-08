@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
@@ -142,87 +143,156 @@ class _DashboardPageState extends State<DashboardPage> {
             // Nav bar dark navy color (matching screenshot)
             const navActiveColor = AppColors.blue600;
 
-            return Scaffold(
-              key: _scaffoldKey,
-              drawer: DashboardDrawer(
-                config: config,
-                helper: helper,
-                activeEmp: activeEmp,
-                permissions: permissions,
-              ),
-              body: pages[_bottomIndex],
+            return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (bool didPop, Object? result) async {
+                if (didPop) return;
+                
+                if (_bottomIndex != 0) {
+                  setState(() {
+                    _bottomIndex = 0;
+                  });
+                  return;
+                }
+                
+                final bool? shouldExit = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: const Row(
+                      children: [
+                        Icon(Icons.exit_to_app_rounded, color: AppColors.blue600),
+                        SizedBox(width: 10),
+                        Text(
+                          'Exit App',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    content: const Text(
+                      'Are you sure you want to exit the app?',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text(
+                          'No',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blue600,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text(
+                          'Yes',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
 
-              // ── Center FAB (notched circular button) ──────────────────
-              floatingActionButton: Container(
-                width: 58,
-                height: 58,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.blue600,
-
+                if (shouldExit == true) {
+                  await SystemNavigator.pop();
+                }
+              },
+              child: Scaffold(
+                key: _scaffoldKey,
+                backgroundColor: AppColors.scaffoldBg,
+                drawer: DashboardDrawer(
+                  config: config,
+                  helper: helper,
+                  activeEmp: activeEmp,
+                  permissions: permissions,
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () => _scaffoldKey.currentState?.openDrawer(),
-                    child: const Icon(
-                      Icons.grid_view_rounded,
-                      color: Colors.white,
-                      size: 26,
+                body: pages[_bottomIndex],
+
+                // ── Center FAB (notched circular button) ──────────────────
+                floatingActionButton: Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.blue600,
+
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                      child: const Icon(
+                        Icons.grid_view_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              floatingActionButtonLocation:
-                  FloatingActionButtonLocation.centerDocked,
+                floatingActionButtonLocation:
+                    FloatingActionButtonLocation.centerDocked,
 
-              // ── Custom Notched Bottom Nav Bar ─────────────────────────
-              bottomNavigationBar: BottomAppBar(
-                shape: const CircularNotchedRectangle(),
-                notchMargin: 8,
-                color: Colors.white,
-                elevation: 12,
-                padding: EdgeInsets.zero,
-                child: SizedBox(
-                  height: 60,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      // Left side
-                      _buildNavItem(
-                        index: 0,
-                        activeIcon: Icons.home_rounded,
-                        inactiveIcon: Icons.home_outlined,
-                        label: 'Home',
-                        activeColor: navActiveColor,
-                      ),
-                      _buildNavItem(
-                        index: 1,
-                        activeIcon: Icons.fingerprint_rounded,
-                        inactiveIcon: Icons.fingerprint_rounded,
-                        label: 'Attendance',
-                        activeColor: navActiveColor,
-                      ),
-                      // Space for FAB
-                      const SizedBox(width: 58),
-                      // Right side
-                      _buildNavItem(
-                        index: 2,
-                        activeIcon: Icons.notifications_rounded,
-                        inactiveIcon: Icons.notifications_outlined,
-                        label: 'Alerts',
-                        activeColor: navActiveColor,
-                      ),
-                      _buildNavItem(
-                        index: 3,
-                        activeIcon: Icons.person_rounded,
-                        inactiveIcon: Icons.person_outlined,
-                        label: 'Profile',
-                        activeColor: navActiveColor,
-                      ),
-                    ],
+                // ── Custom Notched Bottom Nav Bar ─────────────────────────
+                bottomNavigationBar: BottomAppBar(
+                  shape: const CircularNotchedRectangle(),
+                  notchMargin: 8,
+                  color: Colors.white,
+                  elevation: 12,
+                  padding: EdgeInsets.zero,
+                  child: SizedBox(
+                    height: 60,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        // Left side
+                        _buildNavItem(
+                          index: 0,
+                          activeIcon: Icons.home_rounded,
+                          inactiveIcon: Icons.home_outlined,
+                          label: 'Home',
+                          activeColor: navActiveColor,
+                        ),
+                        _buildNavItem(
+                          index: 1,
+                          activeIcon: Icons.fingerprint_rounded,
+                          inactiveIcon: Icons.fingerprint_rounded,
+                          label: 'Attendance',
+                          activeColor: navActiveColor,
+                        ),
+                        // Space for FAB
+                        const SizedBox(width: 58),
+                        // Right side
+                        _buildNavItem(
+                          index: 2,
+                          activeIcon: Icons.notifications_rounded,
+                          inactiveIcon: Icons.notifications_outlined,
+                          label: 'Alerts',
+                          activeColor: navActiveColor,
+                        ),
+                        _buildNavItem(
+                          index: 3,
+                          activeIcon: Icons.person_rounded,
+                          inactiveIcon: Icons.person_outlined,
+                          label: 'Profile',
+                          activeColor: navActiveColor,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

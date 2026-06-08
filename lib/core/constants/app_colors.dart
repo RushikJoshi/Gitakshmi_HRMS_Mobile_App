@@ -6,6 +6,7 @@ class AppColors {
   static const Color secondary = Color(0xFF2FBBA4);
   static const Color background = Color(0xFFF9FAFB); // Premium Light Gray
   static const Color surface = Colors.white;
+  static const Color scaffoldBg = Color(0xFFF1F3F8); // Light blue-gray scaffold bg
   
   // New Brand Colors requested
   static const Color myCoCyan = Color(0xFF08A4BB);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
+import 'package:gitakshmi_hrms_app/core/widgets/dropdown/app_dropdown_field.dart';
 
 class DashboardPersonaConsole extends StatefulWidget {
   final CompanyConfig config;
@@ -65,14 +66,9 @@ class _DashboardPersonaConsoleState extends State<DashboardPersonaConsole> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    DropdownButtonFormField<String>(
+                    AppDropdownField<String>(
+                      labelText: 'Simulate User Account',
                       value: widget.helper.activeEmployeeId,
-                      decoration: const InputDecoration(
-                        labelText: 'Simulate User Account',
-                        border: OutlineInputBorder(),
-                        fillColor: AppColors.surface,
-                        filled: true,
-                      ),
                       items: widget.helper.employees.map((e) {
                         final role = widget.helper.roles.firstWhere(
                           (r) => r.id == e.roleId,

@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/core/widgets/bottomsheet/app_selection_bottom_sheet.dart';
 
-class DashboardWorkHoursCard extends StatelessWidget {
+class DashboardWorkHoursCard extends StatefulWidget {
   const DashboardWorkHoursCard({super.key});
+
+  @override
+  State<DashboardWorkHoursCard> createState() => _DashboardWorkHoursCardState();
+}
+
+class _DashboardWorkHoursCardState extends State<DashboardWorkHoursCard> {
+  String _selectedFilter = 'This Week';
+
+  Future<void> _selectFilter() async {
+    final result = await AppSelectionBottomSheet.show(
+      context: context,
+      title: 'Select Filter',
+      subtitle: 'Choose weekly range filter',
+      options: ['This Week', 'Last Week'],
+      initialSelected: _selectedFilter,
+    );
+    if (result != null && mounted) {
+      setState(() {
+        _selectedFilter = result;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,17 +56,28 @@ class DashboardWorkHoursCard extends StatelessWidget {
                     children: [
                       _buildLegendDot(AppColors.purple600, 'Hours'),
                       const SizedBox(width: 14),
-                      DropdownButton<String>(
-                        value: 'This Week',
-                        items: ['This Week', 'Last Week'].map((e) {
-                          return DropdownMenuItem(
-                            value: e,
-                            child: Text(e, style: const TextStyle(fontSize: 12)),
-                          );
-                        }).toList(),
-                        onChanged: (_) {},
-                        underline: const SizedBox(),
-                        icon: const Icon(Icons.keyboard_arrow_down, size: 16),
+                      GestureDetector(
+                        onTap: _selectFilter,
+                        behavior: HitTestBehavior.opaque,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _selectedFilter,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.keyboard_arrow_down,
+                              size: 16,
+                              color: AppColors.textPrimary,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -57,13 +91,13 @@ class DashboardWorkHoursCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _buildWeeklyBar('Mon', 0.6),
-                    _buildWeeklyBar('Tue', 0.4),
-                    _buildWeeklyBar('Wed', 0.6),
-                    _buildWeeklyBar('Thu', 0.7),
-                    _buildWeeklyBar('Fri', 0.9),
-                    _buildWeeklyBar('Sat', 0.8),
-                    _buildWeeklyBar('Sun', 0.5),
+                    _buildWeeklyBar('Mon', _selectedFilter == 'This Week' ? 0.6 : 0.4),
+                    _buildWeeklyBar('Tue', _selectedFilter == 'This Week' ? 0.4 : 0.8),
+                    _buildWeeklyBar('Wed', _selectedFilter == 'This Week' ? 0.6 : 0.5),
+                    _buildWeeklyBar('Thu', _selectedFilter == 'This Week' ? 0.7 : 0.6),
+                    _buildWeeklyBar('Fri', _selectedFilter == 'This Week' ? 0.9 : 0.7),
+                    _buildWeeklyBar('Sat', _selectedFilter == 'This Week' ? 0.8 : 0.2),
+                    _buildWeeklyBar('Sun', _selectedFilter == 'This Week' ? 0.5 : 0.1),
                   ],
                 ),
               ),

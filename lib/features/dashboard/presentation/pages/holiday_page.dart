@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gitakshmi_hrms_app/core/widgets/bottomsheet/app_selection_bottom_sheet.dart';
+import 'package:gitakshmi_hrms_app/core/widgets/buttons/app_button.dart';
 import '../../data/models/holiday_model.dart';
 
 class HolidayScreen extends StatefulWidget {
@@ -15,6 +17,14 @@ class _HolidayScreenState extends State<HolidayScreen> {
   static const Color greyText = Color(0xFF667085);
   static const Color borderColor = Color(0xFFD0D5DD);
   static const Color appliedPurple = Color(0xFFB5A4F4);
+
+  String _currentMonth = "May, 2025";
+
+  final List<String> _monthsList = [
+    "January, 2025", "February, 2025", "March, 2025", "April, 2025",
+    "May, 2025", "June, 2025", "July, 2025", "August, 2025",
+    "September, 2025", "October, 2025", "November, 2025", "December, 2025"
+  ];
 
   final List<HolidayEntry> holidays = [
     HolidayEntry(
@@ -43,6 +53,39 @@ class _HolidayScreenState extends State<HolidayScreen> {
       imageAsset: "assets/images/Janmashtami.png",
     ),
   ];
+
+  void _changeMonth(bool next) {
+    final index = _monthsList.indexOf(_currentMonth);
+    if (index == -1) return;
+    if (next) {
+      if (index < _monthsList.length - 1) {
+        setState(() {
+          _currentMonth = _monthsList[index + 1];
+        });
+      }
+    } else {
+      if (index > 0) {
+        setState(() {
+          _currentMonth = _monthsList[index - 1];
+        });
+      }
+    }
+  }
+
+  Future<void> _selectMonth() async {
+    final result = await AppSelectionBottomSheet.show(
+      context: context,
+      title: "Select Month",
+      subtitle: "Choose month to view holidays",
+      options: _monthsList,
+      initialSelected: _currentMonth,
+    );
+    if (result != null && mounted) {
+      setState(() {
+        _currentMonth = result;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,22 +153,26 @@ class _HolidayScreenState extends State<HolidayScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildMonthArrow(Icons.chevron_left),
-                Row(
-                  children: const [
-                    Text(
-                      "May, 2025",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: darkText,
+                _buildMonthArrow(Icons.chevron_left, () => _changeMonth(false)),
+                GestureDetector(
+                  onTap: _selectMonth,
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    children: [
+                      Text(
+                        _currentMonth,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: darkText,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.keyboard_arrow_down, color: darkText, size: 20),
-                  ],
+                      const SizedBox(width: 4),
+                      const Icon(Icons.keyboard_arrow_down, color: darkText, size: 20),
+                    ],
+                  ),
                 ),
-                _buildMonthArrow(Icons.chevron_right),
+                _buildMonthArrow(Icons.chevron_right, () => _changeMonth(true)),
               ],
             ),
           ),
@@ -148,14 +195,17 @@ class _HolidayScreenState extends State<HolidayScreen> {
     );
   }
 
-  Widget _buildMonthArrow(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFD0D5DD).withOpacity(0.5),
-        shape: BoxShape.circle,
+  Widget _buildMonthArrow(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFD0D5DD).withValues(alpha: 0.5),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: const Color(0xFF475467), size: 20),
       ),
-      child: Icon(icon, color: const Color(0xFF475467), size: 20),
     );
   }
 
@@ -167,7 +217,7 @@ class _HolidayScreenState extends State<HolidayScreen> {
         border: Border.all(color: const Color(0xFF98A2B3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -269,33 +319,19 @@ class _HolidayScreenState extends State<HolidayScreen> {
                   ),
                 ),
                 // Apply / Applied Button
-                SizedBox(
+                AppButton(
+                  text: holiday.isApplied ? "Applied" : "Apply",
                   height: 32,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (!holiday.isApplied) {
-                        setState(() {
-                          holidays[index].isApplied = true;
-                        });
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: holiday.isApplied ? appliedPurple : headerPurple,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    child: Text(
-                      holiday.isApplied ? "Applied" : "Apply",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  borderRadius: 16,
+                  backgroundColor: holiday.isApplied ? appliedPurple : headerPurple,
+                  textColor: Colors.white,
+                  onPressed: () {
+                    if (!holiday.isApplied) {
+                      setState(() {
+                        holidays[index].isApplied = true;
+                      });
+                    }
+                  },
                 ),
               ],
             ),

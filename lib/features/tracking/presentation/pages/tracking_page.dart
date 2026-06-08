@@ -3,6 +3,7 @@ import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/widgets/buttons/app_button.dart';
 import 'package:gitakshmi_hrms_app/core/widgets/textfield/app_text_field.dart';
 import 'package:gitakshmi_hrms_app/core/widgets/dropdown/app_dropdown_field.dart';
+import 'package:gitakshmi_hrms_app/core/widgets/bottomsheet/app_date_picker.dart';
 import 'package:gitakshmi_hrms_app/features/tracking/presentation/widgets/tracking_live_map.dart';
 import 'package:gitakshmi_hrms_app/features/tracking/presentation/widgets/tracking_geofence_setup.dart';
 import 'package:gitakshmi_hrms_app/features/tracking/presentation/widgets/tracking_location_logs.dart';
@@ -403,8 +404,10 @@ class _TrackingPageState extends State<TrackingPage> {
                       readOnly: true,
                       labelText: 'Next Follow Up Date',
                       onTap: () async {
-                        final date = await showDatePicker(
+                        final date = await AppDatePicker.showSingle(
                           context: context,
+                          title: 'Select Follow Up Date',
+                          subtitle: 'Plan your next visit follow-up',
                           initialDate: DateTime.now(),
                           firstDate: DateTime.now(),
                           lastDate: DateTime.now().add(const Duration(days: 90)),
