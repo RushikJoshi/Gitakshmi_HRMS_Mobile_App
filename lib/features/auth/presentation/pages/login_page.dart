@@ -4,6 +4,8 @@ import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/phone_sign_i
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/signup_page.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/pages/dashboard_page.dart';
 
+import '../../../dashboard/presentation/pages/dashboard_page.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 

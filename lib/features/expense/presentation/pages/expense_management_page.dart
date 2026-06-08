@@ -1,18 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
-import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
-import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
-
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/expense_status_chip.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/expense_dashboard_tab.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/my_expenses_tab.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/new_claim_tab.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/advance_tab.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/history_tab.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/expense_approvals_tab.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/reimbursements_tab.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/expense_policies_tab.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/expense_reports_tab.dart';
 
 class ExpenseManagementPage extends StatefulWidget {
   const ExpenseManagementPage({super.key});
@@ -21,151 +7,343 @@ class ExpenseManagementPage extends StatefulWidget {
   State<ExpenseManagementPage> createState() => _ExpenseManagementPageState();
 }
 
-class _ExpenseManagementPageState extends State<ExpenseManagementPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ExpenseManagementPageState extends State<ExpenseManagementPage> {
+  // Current active tab index: 0 = Review, 1 = Approved, 2 = Rejected
+  int _activeTabIndex = 0;
+
+  // Mock list of expenses matching the screenshot
+  final List<ExpenseSummaryItem> _expenses = [
+    // Review Items
+    ExpenseSummaryItem(
+      date: "27 September 2024",
+      type: "E-Learning",
+      amount: 55,
+      status: ExpenseStatus.review,
+    ),
+    ExpenseSummaryItem(
+      date: "24 September 2024",
+      type: "E-Learning",
+      amount: 55,
+      status: ExpenseStatus.review,
+    ),
+    ExpenseSummaryItem(
+      date: "21 September 2024",
+      type: "E-Learning",
+      amount: 55,
+      status: ExpenseStatus.review,
+    ),
+    // Approved Items
+    ExpenseSummaryItem(
+      date: "18 September 2024",
+      type: "E-Learning",
+      amount: 55,
+      status: ExpenseStatus.approved,
+      approvedDate: "19 Sept 2024",
+      approvedBy: "Elaine",
+    ),
+    ExpenseSummaryItem(
+      date: "14 September 2024",
+      type: "E-Learning",
+      amount: 55,
+      status: ExpenseStatus.approved,
+      approvedDate: "19 Sept 2024",
+      approvedBy: "Elaine",
+    ),
+    // Rejected Items
+    ExpenseSummaryItem(
+      date: "10 September 2024",
+      type: "E-Learning",
+      amount: 55,
+      status: ExpenseStatus.rejected,
+      approvedDate: "11 Sept 2024",
+      approvedBy: "Elaine",
+    ),
+    ExpenseSummaryItem(
+      date: "05 September 2024",
+      type: "E-Learning",
+      amount: 55,
+      status: ExpenseStatus.rejected,
+      approvedDate: "06 Sept 2024",
+      approvedBy: "Elaine",
+    ),
+  ];
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 9, vsync: this);
-    _tabController.addListener(() => setState(() {}));
+  Widget build(BuildContext context) {
+    // Filter list dynamically based on the active tab
+    final filteredExpenses = _expenses.where((expense) {
+      if (_activeTabIndex == 0) return expense.status == ExpenseStatus.review;
+      if (_activeTabIndex == 1) return expense.status == ExpenseStatus.approved;
+      return expense.status == ExpenseStatus.rejected;
+    }).toList();
+
+    // Counts for badges
+    final reviewCount = _expenses.where((e) => e.status == ExpenseStatus.review).length;
+    final approvedCount = _expenses.where((e) => e.status == ExpenseStatus.approved).length;
+    final rejectedCount = _expenses.where((e) => e.status == ExpenseStatus.rejected).length;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FC),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Curved Purple Header Card
+            const ExpenseHeaderCard(),
+
+            // Overlapping Stats Card
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: ExpenseStatsCard(),
+            ),
+            const SizedBox(height: 20),
+
+            // Horizontal Tab Selector
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ExpenseTabSelector(
+                activeIndex: _activeTabIndex,
+                reviewCount: reviewCount,
+                approvedCount: approvedCount,
+                rejectedCount: rejectedCount,
+                onTabSelected: (index) {
+                  setState(() {
+                    _activeTabIndex = index;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Expense Items List
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ExpenseCardList(
+                expenses: filteredExpenses,
+                activeTabIndex: _activeTabIndex,
+              ),
+            ),
+            const SizedBox(height: 30), // bottom spacing
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------
+// MODELS & ENUMS
+// ----------------------------------------------------
+enum ExpenseStatus { review, approved, rejected }
+
+class ExpenseSummaryItem {
+  final String date;
+  final String type;
+  final double amount;
+  final ExpenseStatus status;
+  final String? approvedDate;
+  final String? approvedBy;
+
+  ExpenseSummaryItem({
+    required this.date,
+    required this.type,
+    required this.amount,
+    required this.status,
+    this.approvedDate,
+    this.approvedBy,
+  });
+}
+
+// ----------------------------------------------------
+// SEPARATE WIDGETS
+// ----------------------------------------------------
+
+/// 1. Custom Wave Clipper for Purple Header
+class HeaderClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 48);
+
+    // Smooth bezier curve to match wave shape in mockup
+    path.quadraticBezierTo(
+      size.width * 0.35,
+      size.height,
+      size.width * 0.7,
+      size.height - 35,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.85,
+      size.height - 50,
+      size.width,
+      size.height - 25,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
 
-  void _openClaimDetailSheet(ExpenseClaimModel claim, Color primary, RolePermissionHelper helper) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.88,
-        padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+/// 2. Header Card widget with flying card image
+class ExpenseHeaderCard extends StatelessWidget {
+  const ExpenseHeaderCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipPath(
+      clipper: HeaderClipper(),
+      child: Container(
+        height: 220,
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF8C5CF8),
+              Color(0xFF6A36EF),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Stack(
             children: [
-              Align(
-                alignment: Alignment.center,
-                child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ExpenseStatusChip(label: claim.status, status: claim.status),
-                  IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context)),
-                ],
-              ),
-              Text(claim.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-              const SizedBox(height: 4),
-              Text('Submitted: ${claim.submittedDate}', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-              if (claim.approvedBy.isNotEmpty)
-                Text('Approved by: ${claim.approvedBy} on ${claim.approvedDate}', style: const TextStyle(fontSize: 11, color: Colors.green)),
-              const SizedBox(height: 16),
-
-              // Amounts
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(12)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+              Padding(
+                padding: const EdgeInsets.only(left: 20, top: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _amountBox('Claimed', '₹${claim.totalClaimed.toStringAsFixed(0)}', primary),
-                    if (claim.approvedAmount > 0)
-                      _amountBox('Approved', '₹${claim.approvedAmount.toStringAsFixed(0)}', Colors.green),
-                    if (claim.approvedAmount < claim.totalClaimed && claim.approvedAmount > 0)
-                      _amountBox('Variance', '₹${(claim.totalClaimed - claim.approvedAmount).toStringAsFixed(0)}', Colors.orange),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      "Expense Summary",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Claim your expenses here.",
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
               ),
-
-              // Rejection reason
-              if (claim.rejectionReason.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(10)),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline_rounded, color: Colors.red, size: 16),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(claim.rejectionReason, style: const TextStyle(fontSize: 11, color: Colors.red))),
-                    ],
-                  ),
+              // Floating credit card with rainbow trail
+              Positioned(
+                right: 8,
+                top: 24,
+                child: Image.asset(
+                  "assets/images/credit_card.png",
+                  height: 110,
+                  width: 150,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const SizedBox.shrink();
+                  },
                 ),
-              ],
-
-              const SizedBox(height: 16),
-              const Text('Expense Line Items', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-              const SizedBox(height: 8),
-              ...claim.lineItems.map((item) => _lineItemCard(item, primary)),
+              ),
             ],
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _amountBox(String label, String value, Color color) => Column(
-    children: [
-      Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
-      Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
-    ],
-  );
+/// 3. Stats Card overlapping the header
+class ExpenseStatsCard extends StatelessWidget {
+  const ExpenseStatsCard({super.key});
 
-  Widget _lineItemCard(ExpenseLineItem item, Color primary) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(10),
+      width: double.infinity,
       decoration: BoxDecoration(
-        border: Border.all(color: item.exceedsPolicy ? Colors.red.shade200 : Colors.grey.shade100),
-        borderRadius: BorderRadius.circular(10),
-        color: item.exceedsPolicy ? Colors.red.shade50 : Colors.white,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: (item.exceedsPolicy ? Colors.red : primary).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(_categoryIcon(item.category), color: item.exceedsPolicy ? Colors.red : primary, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.category,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: item.exceedsPolicy ? Colors.red : AppColors.textPrimary),
-                ),
-                Text(item.description, style: const TextStyle(fontSize: 10, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                if (item.billAttached.isNotEmpty)
-                  Row(
-                    children: [
-                      const Icon(Icons.attach_file_rounded, size: 10, color: Colors.green),
-                      Text(item.billAttached, style: const TextStyle(fontSize: 9, color: Colors.green)),
-                    ],
-                  ),
-              ],
+          const Text(
+            "Total Expense",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF101828),
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          const SizedBox(height: 2),
+          const Text(
+            "Period 1 Jan 2024 - 30 Dec 2024",
+            style: TextStyle(
+              fontSize: 10.5,
+              color: Color(0xFF667085),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
             children: [
-              Text('₹${item.amount.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: item.exceedsPolicy ? Colors.red : AppColors.textPrimary)),
-              if (item.exceedsPolicy)
-                Text('Limit: ₹${item.policyLimit.toStringAsFixed(0)}', style: const TextStyle(fontSize: 9, color: Colors.red)),
-              Text(item.date, style: const TextStyle(fontSize: 9, color: AppColors.textLight)),
+              _buildStatBox(
+                label: "Total",
+                value: "₹1010",
+                iconWidget: const Icon(
+                  Icons.credit_card_rounded,
+                  size: 11,
+                  color: Color(0xFF7A5AF8),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _buildStatBox(
+                label: "Review",
+                value: "₹455",
+                iconWidget: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.orange,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _buildStatBox(
+                label: "Approved",
+                value: "₹555",
+                iconWidget: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -173,107 +351,394 @@ class _ExpenseManagementPageState extends State<ExpenseManagementPage>
     );
   }
 
-  IconData _categoryIcon(String cat) {
-    switch (cat) {
-      case 'Travel': return Icons.flight_rounded;
-      case 'Fuel': return Icons.local_gas_station_rounded;
-      case 'Food': return Icons.restaurant_rounded;
-      case 'Hotel': return Icons.hotel_rounded;
-      case 'Client Meeting': return Icons.handshake_rounded;
-      case 'Entertainment': return Icons.theater_comedy_rounded;
-      case 'Office Supplies': return Icons.inventory_2_rounded;
-      case 'Internet': return Icons.wifi_rounded;
-      case 'Mobile Recharge': return Icons.smartphone_rounded;
-      case 'Training': return Icons.school_rounded;
-      case 'Medical': return Icons.local_hospital_rounded;
-      default: return Icons.category_rounded;
-    }
+  Widget _buildStatBox({
+    required String label,
+    required String value,
+    required Widget iconWidget,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9FAFB),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFEAECF0)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                iconWidget,
+                const SizedBox(width: 5),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF667085),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF101828),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
+}
+
+/// 4. Horizontal Tab Selector with rounded active pills and counts
+class ExpenseTabSelector extends StatelessWidget {
+  final int activeIndex;
+  final int reviewCount;
+  final int approvedCount;
+  final int rejectedCount;
+  final ValueChanged<int> onTabSelected;
+
+  const ExpenseTabSelector({
+    super.key,
+    required this.activeIndex,
+    required this.reviewCount,
+    required this.approvedCount,
+    required this.rejectedCount,
+    required this.onTabSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final helper = RolePermissionHelper.instance;
-    return AnimatedBuilder(
-      animation: helper,
-      builder: (context, _) {
-        final config = SaaSBrandingHelper.instance.configNotifier.value;
-        final primary = config.primaryColor;
-        final perms = helper.getFinalPermissions(helper.activeEmployeeId);
-        final canApprove = perms.contains('approve_expense');
-        final canViewPayroll = perms.contains('generate_payroll') || perms.contains('view_payroll');
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildTabPill("Review", reviewCount, 0),
+        _buildTabPill("Approved", approvedCount, 1),
+        _buildTabPill("Rejected", rejectedCount, 2),
+      ],
+    );
+  }
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Expense & Reimbursement'),
-            bottom: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              indicatorColor: primary,
-              labelColor: primary,
-              unselectedLabelColor: AppColors.textSecondary,
-              tabs: [
-                const Tab(icon: Icon(Icons.dashboard_rounded), text: 'Dashboard'),
-                const Tab(icon: Icon(Icons.receipt_long_rounded), text: 'My Expenses'),
-                const Tab(icon: Icon(Icons.add_card_rounded), text: 'New Claim'),
-                const Tab(icon: Icon(Icons.account_balance_wallet_rounded), text: 'Advance'),
-                const Tab(icon: Icon(Icons.history_rounded), text: 'History'),
-                Tab(icon: const Icon(Icons.approval_rounded), text: 'Approvals${canApprove ? "" : " 🔒"}'),
-                const Tab(icon: Icon(Icons.payments_rounded), text: 'Reimbursements'),
-                const Tab(icon: Icon(Icons.policy_rounded), text: 'Policies'),
-                const Tab(icon: Icon(Icons.bar_chart_rounded), text: 'Reports'),
-              ],
+  Widget _buildTabPill(String label, int count, int index) {
+    final bool isActive = activeIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => onTabSelected(index),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFF7A5AF8) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isActive ? const Color(0xFF7A5AF8) : const Color(0xFFD0D5DD),
+              width: 1.1,
             ),
           ),
-          body: TabBarView(
-            controller: _tabController,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ExpenseDashboardTab(
-                helper: helper,
-                primaryColor: primary,
-                onTapClaim: (claim) => _openClaimDetailSheet(claim, primary, helper),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: isActive ? Colors.white : const Color(0xFF475467),
+                ),
               ),
-              MyExpensesTab(
-                helper: helper,
-                primaryColor: primary,
-                onTapClaim: (claim) => _openClaimDetailSheet(claim, primary, helper),
-              ),
-              NewClaimTab(
-                helper: helper,
-                primaryColor: primary,
-                onSubmitClaimSuccess: () => _tabController.animateTo(1),
-              ),
-              AdvanceTab(
-                helper: helper,
-                primaryColor: primary,
-              ),
-              HistoryTab(
-                helper: helper,
-                primaryColor: primary,
-                onTapClaim: (claim) => _openClaimDetailSheet(claim, primary, helper),
-              ),
-              ExpenseApprovalsTab(
-                helper: helper,
-                canApprove: canApprove,
-                canFinance: canViewPayroll,
-                primaryColor: primary,
-              ),
-              ReimbursementsTab(
-                helper: helper,
-                canFinance: canViewPayroll,
-                primaryColor: primary,
-              ),
-              ExpensePoliciesTab(
-                helper: helper,
-                primaryColor: primary,
-              ),
-              ExpenseReportsTab(
-                helper: helper,
-                primaryColor: primary,
+              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isActive ? Colors.orange : const Color(0xFFEAECF0),
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                child: Center(
+                  child: Text(
+                    count.toString(),
+                    style: TextStyle(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w800,
+                      color: isActive ? Colors.white : const Color(0xFF475467),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
-        );
+        ),
+      ),
+    );
+  }
+}
+
+/// 5. Scrollable List of Expense Items
+class ExpenseCardList extends StatelessWidget {
+  final List<ExpenseSummaryItem> expenses;
+  final int activeTabIndex;
+
+  const ExpenseCardList({
+    super.key,
+    required this.expenses,
+    required this.activeTabIndex,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (expenses.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: Text(
+            "No expenses in this category.",
+            style: TextStyle(color: Color(0xFF667085)),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: expenses.length,
+      itemBuilder: (context, index) {
+        final item = expenses[index];
+        return _buildExpenseItem(item);
       },
+    );
+  }
+
+  Widget _buildExpenseItem(ExpenseSummaryItem item) {
+    final bool isApproved = activeTabIndex == 1;
+    final bool isRejected = activeTabIndex == 2;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Date Header
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.calendar_today_outlined,
+                size: 13,
+                color: Color(0xFF7A5AF8),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                item.date,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF101828),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Item Details Box
+        Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFEAECF0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.015),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Type",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF667085),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        item.type,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF344054),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const Text(
+                        "Total Expense",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF667085),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        "₹${item.amount.toStringAsFixed(0)}",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF344054),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              // Approved Status Footer
+              if (isApproved && item.approvedDate != null) ...[
+                const SizedBox(height: 12),
+                const Divider(color: Color(0xFFF2F4F7), height: 1),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: Colors.green,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          "Approved at ${item.approvedDate}",
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Text(
+                          "By ",
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: Color(0xFF667085),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Container(
+                          width: 18,
+                          height: 18,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFFFFEAD5),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.person, size: 10, color: Colors.orange),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          item.approvedBy ?? "Elaine",
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF344054),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+              // Rejected Status Footer
+              if (isRejected && item.approvedDate != null) ...[
+                const SizedBox(height: 12),
+                const Divider(color: Color(0xFFF2F4F7), height: 1),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.cancel_rounded,
+                          color: Colors.red,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          "Rejected at ${item.approvedDate}",
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Text(
+                          "By ",
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: Color(0xFF667085),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Container(
+                          width: 18,
+                          height: 18,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFFFFEAD5),
+                          ),
+                          child: const Center(
+                            child: Icon(Icons.person, size: 10, color: Colors.orange),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          item.approvedBy ?? "Elaine",
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF344054),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
