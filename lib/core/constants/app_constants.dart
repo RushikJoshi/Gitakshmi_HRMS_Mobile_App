@@ -1,0 +1,2 @@
+// Constants: AppConstants
+class AppConstants {}

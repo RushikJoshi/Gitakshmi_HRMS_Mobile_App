@@ -1,0 +1,2 @@
+// Constants: AppImages
+class AppImages {}

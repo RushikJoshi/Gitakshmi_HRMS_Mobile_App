@@ -1,0 +1,2 @@
+// Constants: AppSizes
+class AppSizes {}

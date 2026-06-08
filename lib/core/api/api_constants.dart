@@ -1,0 +1,2 @@
+// Constants: ApiConstants
+class ApiConstants {}

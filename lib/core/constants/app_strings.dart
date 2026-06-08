@@ -1,0 +1,2 @@
+// Constants: AppStrings
+class AppStrings {}

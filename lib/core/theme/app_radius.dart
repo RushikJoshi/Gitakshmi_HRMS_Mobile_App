@@ -1,0 +1,2 @@
+// Constants: AppRadius
+class AppRadius {}

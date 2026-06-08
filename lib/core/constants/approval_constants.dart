@@ -1,0 +1,2 @@
+// Constants: ApprovalConstants
+class ApprovalConstants {}
