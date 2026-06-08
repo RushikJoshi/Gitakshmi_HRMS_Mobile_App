@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Brand Colors
-  static const Color primary = Color(0xFF6366F1); // Indigo Accent
-  static const Color secondary = Color(0xFF4F46E5); // Darker Indigo
+  static const Color primary = Color(0xFF2F648E);
+  static const Color secondary = Color(0xFF2FBBA4);
   static const Color background = Color(0xFFF9FAFB); // Premium Light Gray
   static const Color surface = Colors.white;
   
+  // New Brand Colors requested
+  static const Color myCoCyan = Color(0xFF08A4BB);
+  static const Color backgroundPrimary = Color(0xFFFAFAFF);
+  static const Color bgWhite = Color(0xFFFFFFFF);
+
   // Status Colors
   static const Color success = Color(0xFF10B981); // Emerald Green
   static const Color error = Color(0xFFEF4444); // Rose Red
@@ -31,10 +36,31 @@ class AppColors {
   static const Color calWeekOff = Color(0xFF111827); // Dark Slate/Black
   
   // Text Colors
-  static const Color textPrimary = Color(0xFF111827);
-  static const Color textSecondary = Color(0xFF4B5563);
+  static const Color textPrimary = Color(0xFF101828);
+  static const Color textSecondary = Color(0xFF475467);
   static const Color textLight = Color(0xFF9CA3AF);
-  
+  static const Color textGray = Color(0xFF7C7C7C);
+
+  // Surface Colors
+  static const Color surfacePrimary = Color(0xFFF5F5F5);
+
+  // Border Colors
+  static const Color textfieldBorder = Color(0xFF98A2B3);
+
+  // Gradient Colors
+  static const Color gradient1 = Color(0xFF2E8EFF);
+  static const Color gradient2 = Color(0xFF7155FF);
+
+  // Onboarding Colors
+  static const Color on_gradient1 = Color(0xFF7A5AF8);
+  static const Color on_gradient2 = Color(0xFFFFFFFF);
+
+  // Button Gradient Colors
+  static const Color button_grad_1 = Color(0xFF8862F2);
+  static const Color button_grad_2 = Color(0xFF7544FC);
+  static const Color button_grad_3 = Color(0xFF5B2ED4);
+  static const Color border = Color(0xFF7A5AF8);
+
   // Custom Gradients
   static const Gradient primaryGradient = LinearGradient(
     colors: [primary, Color(0xFF818CF8)],
@@ -46,5 +72,11 @@ class AppColors {
     colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+  );
+
+  static const Gradient splashGradient = LinearGradient(
+    colors: [gradient1, gradient2],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
   );
 }
