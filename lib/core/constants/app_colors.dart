@@ -79,4 +79,18 @@ class AppColors {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
+
+  // Compatibility colors to prevent errors in dashboard widgets
+  static const Color baseWhite = Colors.white;
+  static const Color baseBlack = Color(0xFF101828);
+  static const Color gray200 = Color(0xFFE4E7EC);
+  static const Color gray400 = Color(0xFF98A2B3);
+  static const Color gray500 = Color(0xFF667085);
+  static const Color gray600 = Color(0xFF475467);
+  static const Color purple100 = Color(0xFFEBE9FE);
+  static const Color purple600 = Color(0xFF6938EF);
+  static const Color error300 = Color(0xFFFDA29B);
+  static const Color error500 = Color(0xFFF04438);
+  static const Color blue500 = Color(0xFF3F81FF);
+  static const Color blue600 = Color(0xFF2667E0);
 }
