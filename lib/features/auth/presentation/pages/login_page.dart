@@ -4,6 +4,8 @@ import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/phone_sign_i
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/signup_page.dart';
 import 'package:gitakshmi_hrms_app/features/leave/presentation/pages/leave_page.dart';
 
+import '../../../dashboard/presentation/pages/dashboard_page.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -44,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
     if (emailError == null && passwordError == null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LeaveSummaryScreen()),
+        MaterialPageRoute(builder: (context) => const DashboardPage()),
       );
     }
   }
