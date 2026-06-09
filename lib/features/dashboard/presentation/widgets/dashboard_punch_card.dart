@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/features/attendance/presentation/pages/attendance_page.dart';
 import 'package:gitakshmi_hrms_app/features/timesheet/presentation/pages/timecard_page.dart';
 
 class DashboardPunchCard extends StatelessWidget {
@@ -71,16 +72,18 @@ class DashboardPunchCard extends StatelessWidget {
                       children: [
                         // Punch In button
                         _buildActionButton(
+                          context: context,
                           title: 'Punch In',
                           iconPath: 'assets/icons/clock-outline.png',
                           gradient: const LinearGradient(
                             colors: [Color(0xFF0FBE7C), Color(0xFF0AAD6F)],
                           ),
-                          onTap: () => onNavigateTab(1),
+                          onTap: () => showPunchInSheet(context),
                         ),
                         const SizedBox(height: 12),
                         // My Time-card button
                         _buildActionButton(
+                          context: context,
                           title: 'My Time-card',
                           iconPath: 'assets/icons/move-left.png',
                           gradient: const LinearGradient(
@@ -141,6 +144,7 @@ class DashboardPunchCard extends StatelessWidget {
 
   /// Gradient button with image icon asset
   Widget _buildActionButton({
+    required BuildContext context,
     required String title,
     required String iconPath,
     required LinearGradient gradient,

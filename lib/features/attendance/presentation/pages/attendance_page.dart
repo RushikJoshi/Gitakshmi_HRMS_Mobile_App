@@ -1,825 +1,1228 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:flutter_face_liveness/flutter_face_liveness.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 
-import 'package:gitakshmi_hrms_app/features/attendance/presentation/widgets/attendance_stats_grid.dart';
-import 'package:gitakshmi_hrms_app/features/attendance/presentation/widgets/aws_offline_sync_card.dart';
-import 'package:gitakshmi_hrms_app/features/attendance/presentation/widgets/attendance_permission_card.dart';
-import 'package:gitakshmi_hrms_app/features/attendance/presentation/widgets/face_liveness_scanner.dart';
-import 'package:gitakshmi_hrms_app/features/attendance/presentation/widgets/out_of_range_form.dart';
-import 'package:gitakshmi_hrms_app/features/attendance/presentation/widgets/break_timer_console.dart';
-import 'package:gitakshmi_hrms_app/features/attendance/presentation/widgets/supervisor_attendance_list.dart';
-import 'package:gitakshmi_hrms_app/core/widgets/dropdown/app_dropdown_field.dart';
-
-class AttendancePage extends StatefulWidget {
-  const AttendancePage({super.key});
-
-  @override
-  State<AttendancePage> createState() => _AttendancePageState();
+// ─────────────────────────────────────────────────────────────────────────────
+// Public entry-point
+// ─────────────────────────────────────────────────────────────────────────────
+Future<void> showPunchInSheet(BuildContext context) {
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    isDismissible: true,
+    enableDrag: true,
+    builder: (_) => const _PunchInBottomSheet(),
+  );
 }
 
-class _AttendancePageState extends State<AttendancePage> with WidgetsBindingObserver {
-  int _punchStep =
-      0; // 0 = Not punched, 1 = Location permission prompt, 2 = Camera permission prompt, 3 = Geo-fence verification, 4 = Face scan liveness check, 5 = Punched In (Working), 6 = Out of Range flow
-  int _activeActivity = 2; // 2 = Working (Blue), 3 = Lunch Break (Yellow), 4 = Short Break (Orange), 5 = Overtime (Purple)
-  bool _isInRange = true; // Switch location range simulation
-  bool _isManagerMode = false;
-  final TextEditingController _reasonController = TextEditingController();
-
-  bool _isLocationPermanentlyDenied = false;
-  bool _isCameraPermanentlyDenied = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _checkAndRequestPermissionsOnResume();
-    }
-  }
-
-  String _selectedLocation = 'HQ Mumbai Office (Geo-fence: 100m Radius)';
-  final List<String> _locations = [
-    'HQ Mumbai Office (Geo-fence: 100m Radius)',
-    'Pune Branch Office (Geo-fence: 150m Radius)',
-    'Remote / Work From Home (WFH)',
-  ];
-
-  // Liveness check simulator steps
-  int _livenessStep = 1; // 1 = Blink Detection, 2 = Head Movement check, 3 = Spoof Detection progress
-  bool _livenessSuccess = false;
-
-  // Break limits simulation
-  bool _simulateOverBreakLimit = false;
-
-  // Mock employee stats
-  final int _presentDays = 18;
-  final int _absentDays = 1;
-  final int _leaveDays = 2;
-  final int _lateDays = 3;
-  final int _earlyOutDays = 1;
-  final String _workingHours = '168.5 Hrs';
-  final String _overtimeHours = '12.0 Hrs';
-
-  final List<Map<String, String>> _breaksHistory = [
-    {"type": "Lunch Break", "duration": "40 Mins", "time": "01:05 PM"},
-    {"type": "Tea Break", "duration": "10 Mins", "time": "04:15 PM"},
-  ];
-
-  final List<Map<String, dynamic>> _teamAttendance = [
-    {
-      "name": "Mayur Sonowane",
-      "role": "Employee",
-      "status": "Working",
-      "time": "In: 09:05 AM",
-      "color": AppColors.success,
-    },
-    {
-      "name": "Riya Sharma",
-      "role": "Sales TL",
-      "status": "Late Check-in",
-      "time": "In: 09:18 AM (+18m)",
-      "color": AppColors.warning,
-    },
-    {
-      "name": "Amit Shah",
-      "role": "Sales Rep",
-      "status": "Lunch Break",
-      "time": "Since: 01:10 PM",
-      "color": AppColors.timerLunch,
-    },
-    {"name": "Akash Patel", "role": "HR Manager", "status": "On Leave", "time": "Casual Leave", "color": AppColors.calLeave},
-    {"name": "Karan Malhotra", "role": "Developer", "status": "Absent", "time": "No Punch", "color": AppColors.error},
-  ];
-
-  // Edge AI & Real Coordinates properties
-  double? _fetchedLatitude;
-  double? _fetchedLongitude;
-  double? _fetchedAccuracy;
-  String? _fetchedTimestamp;
-  double? _calculatedDistance;
-  bool _mockGpsDetected = false;
-
-  // Sync Queue / Offline Storage properties
-  int _syncQueueCount = 0;
-  final List<String> _syncLogs = ["AWS Sync: Ready to synchronize with Lambda/DynamoDB when online."];
-
-  bool get _effectiveInRange => _selectedLocation == 'Remote / Work From Home (WFH)' || _isInRange;
-
-  Future<void> _updatePermissionStatuses() async {
-    var locStatus = await Permission.locationWhenInUse.status;
-    var camStatus = await Permission.camera.status;
-    if (mounted) {
-      setState(() {
-        _isLocationPermanentlyDenied = locStatus.isPermanentlyDenied;
-        _isCameraPermanentlyDenied = camStatus.isPermanentlyDenied;
-      });
-    }
-  }
-
-  Future<void> _checkAndRequestPermissionsOnResume() async {
-    await _updatePermissionStatuses();
-    if (_punchStep == 1) {
-      var locStatus = await Permission.locationWhenInUse.status;
-      if (locStatus.isGranted) {
-        setState(() {
-          _punchStep = 2;
-        });
-        var camStatus = await Permission.camera.status;
-        if (camStatus.isGranted) {
-          _startGeofenceCheck();
-        }
-      }
-    } else if (_punchStep == 2) {
-      var camStatus = await Permission.camera.status;
-      if (camStatus.isGranted) {
-        _startGeofenceCheck();
-      }
-    }
-  }
-
-  Future<void> _checkAndRequestPermissions() async {
-    var locStatus = await Permission.locationWhenInUse.status;
-    if (!locStatus.isGranted) {
-      if (mounted) {
-        setState(() {
-          _isLocationPermanentlyDenied = locStatus.isPermanentlyDenied;
-          _punchStep = 1;
-        });
-      }
-      return;
-    }
-
-    var camStatus = await Permission.camera.status;
-    if (!camStatus.isGranted) {
-      if (mounted) {
-        setState(() {
-          _isCameraPermanentlyDenied = camStatus.isPermanentlyDenied;
-          _punchStep = 2;
-        });
-      }
-      return;
-    }
-
-    _startGeofenceCheck();
-  }
-
-  void _triggerPunchInSequence() async {
-    await _updatePermissionStatuses();
-    _checkAndRequestPermissions();
-  }
-
-  Future<void> _startGeofenceCheck() async {
-    setState(() {
-      _punchStep = 3;
-      _mockGpsDetected = false;
-    });
-
-    try {
-      // Get current position (time limit 8 seconds)
-      Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 8)),
-      );
-
-      // Security Feature: Check for mock GPS (Mock location provider)
-      if (position.isMocked) {
-        setState(() {
-          _mockGpsDetected = true;
-          _punchStep = 0;
-        });
-        _showMockGpsAlert();
-        return;
-      }
-
-      _fetchedLatitude = position.latitude;
-      _fetchedLongitude = position.longitude;
-      _fetchedAccuracy = position.accuracy;
-      _fetchedTimestamp = position.timestamp.toIso8601String();
-
-      // Office coordinates matching solutions overview
-      double officeLat = 19.0760; // HQ Mumbai Office
-      double officeLng = 72.8777;
-      double allowedRadius = 100.0; // Allowed Radius
-
-      if (_selectedLocation.contains('Pune Branch')) {
-        officeLat = 18.5204; // Pune
-        officeLng = 73.8567;
-        allowedRadius = 150.0;
-      }
-
-      double distance = Geolocator.distanceBetween(position.latitude, position.longitude, officeLat, officeLng);
-      _calculatedDistance = distance;
-
-      bool insideRange = distance <= allowedRadius;
-
-      // Remote override or simulation override
-      if (_selectedLocation == 'Remote / Work From Home (WFH)') {
-        insideRange = true;
-      } else if (_isInRange) {
-        insideRange = true;
-      }
-
-      if (mounted) {
-        if (insideRange) {
-          setState(() {
-            _punchStep = 4; // Move to Face Verification Liveness
-            _livenessStep = 1;
-          });
-        } else {
-          setState(() => _punchStep = 6); // Move to Out of Range Flow
-        }
-      }
-    } catch (e) {
-      // Fallback if location service is disabled/timeout or running on emulator
-      if (mounted) {
-        if (_effectiveInRange) {
-          setState(() {
-            _punchStep = 4;
-            _livenessStep = 1;
-          });
-        } else {
-          setState(() => _punchStep = 6);
-        }
-      }
-    }
-  }
-
-  void _showMockGpsAlert() {
-    showDialog(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: Row(
-              children: const [
-                Icon(Icons.gpp_bad_rounded, color: AppColors.error),
-                SizedBox(width: 8),
-                Text('Security Alert', style: TextStyle(color: AppColors.error)),
-              ],
-            ),
-            content: const Text(
-              'SECURITY ALERT: Mock GPS app coordinates detected! Live tracking and attendance checking is restricted.',
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Dismiss')),
-            ],
-          ),
-    );
-  }
-
-  void _startRealLivenessSDK() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (dialogContext) => Scaffold(
-              appBar: AppBar(title: const Text("Biometric Face Liveness SDK")),
-              body: FlutterFaceLiveness(
-                actions: const [LivenessAction.blink, LivenessAction.turnLeft, LivenessAction.turnRight],
-                config: LivenessConfig(randomizeActions: true),
-                onSuccess: (LivenessResult result) {
-                  Navigator.pop(dialogContext);
-                  final String sessId = result.sessionId ?? "SDK_SESSION";
-                  final String sessShort = sessId.length >= 8 ? sessId.substring(0, 8) : sessId;
-                  if (mounted) {
-                    setState(() {
-                      _livenessSuccess = true;
-                      _punchStep = 5; // Success Punch In screen
-                      _activeActivity = 2; // Working state
-                      _syncQueueCount++;
-                      _syncLogs.add("Face Liveness SDK Verification cleared. Session ID: $sessShort...");
-                      _syncLogs.add(
-                        "Local SQLite: 128-D Biometric template signature saved in SQLite (Encrypted AES-256)",
-                      );
-                      _syncLogs.add("Sync Engine: Attendance punch-in added to local DB queue buffer");
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Liveness verified successfully via SDK!'),
-                        backgroundColor: AppColors.success,
-                      ),
-                    );
-                  }
-                },
-                onFailed: (reason) {
-                  Navigator.pop(dialogContext);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Biometric verification failed: $reason'), backgroundColor: AppColors.error),
-                    );
-                  }
-                },
-              ),
-            ),
-      ),
-    );
-  }
-
-  void _simulateLivenessBlink() {
-    setState(() => _livenessStep = 2);
-  }
-
-  void _simulateLivenessHead() {
-    setState(() => _livenessStep = 3);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _livenessSuccess = true;
-          _punchStep = 5; // Punch In Success (Active working screen)
-          _activeActivity = 2; // Working (Blue)
-          _syncQueueCount++;
-          _syncLogs.add("Simulated Face Liveness Verification cleared.");
-          _syncLogs.add("Local SQLite: 128-D MobileFaceNet embedding saved in SQLite (Encrypted AES-256)");
-          _syncLogs.add("Sync Queue: Offline record added. Ready for AWS sync.");
-        });
-      }
-    });
-  }
-
-  void _submitOutOfRangeRequest() {
-    if (_reasonController.text.isNotEmpty) {
-      showDialog(
-        context: context,
-        builder:
-            (_) => AlertDialog(
-              title: const Text('WFH / Out of Range Request'),
-              content: const Text(
-                'Your out-of-range attendance request has been generated and sent to the Workflow Engine for Manager approval.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    setState(() {
-                      _punchStep = 5; // Simulating punched in after request generated
-                      _activeActivity = 2;
-                    });
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a reason for out of range check-in.')),
-      );
-    }
-  }
-
-  Color _getTimerColor() {
-    if (_simulateOverBreakLimit && (_activeActivity == 3 || _activeActivity == 4)) {
-      return AppColors.timerExtraBreak; // Red (Limit Exceeded!)
-    }
-    switch (_activeActivity) {
-      case 2:
-        return AppColors.timerWorking; // Blue
-      case 3:
-        return AppColors.timerLunch; // Yellow
-      case 4:
-        return AppColors.timerShortBreak; // Orange
-      case 5:
-        return AppColors.timerOvertime; // Purple
-      default:
-        return AppColors.timerWorking;
-    }
-  }
-
-  String _getTimerStatusText() {
-    if (_simulateOverBreakLimit && (_activeActivity == 3 || _activeActivity == 4)) {
-      return 'OVERLIMIT BREAK 🚨';
-    }
-    switch (_activeActivity) {
-      case 2:
-        return 'WORKING';
-      case 3:
-        return 'LUNCH BREAK';
-      case 4:
-        return 'SHORT BREAK';
-      case 5:
-        return 'OVERTIME ACTIVATED';
-      default:
-        return 'WORKING';
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _reasonController.dispose();
-    super.dispose();
-  }
-
+// ─────────────────────────────────────────────────────────────────────────────
+// AttendancePage stub
+// ─────────────────────────────────────────────────────────────────────────────
+class AttendancePage extends StatelessWidget {
+  const AttendancePage({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Smart Attendance Board'),
-        actions: [
-          Row(
-            children: [
-              Text(
-                _isManagerMode ? 'Supervisor' : 'Employee',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
-              ),
-              Switch(
-                value: _isManagerMode,
-                onChanged: (val) {
-                  setState(() {
-                    _isManagerMode = val;
-                  });
-                },
-                activeThumbColor: AppColors.primary,
-              ),
-            ],
-          ),
-        ],
+        title: const Text('Attendance'),
+        backgroundColor: AppColors.blue600,
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (!_isManagerMode) ...[
-              // EMPLOYEE VIEWPORT
-              // Personal Attendance Dashboard Stats
-              AttendanceStatsGrid(
-                presentDays: _presentDays,
-                lateDays: _lateDays,
-                earlyOutDays: _earlyOutDays,
-                absentDays: _absentDays,
-                leaveDays: _leaveDays,
-                workingHours: _workingHours,
-                overtimeHours: _overtimeHours,
-                mockGpsDetected: _mockGpsDetected,
-              ),
-              const SizedBox(height: 16),
-
-              // AWS synchronization and Offline Storage Status Indicator
-              AwsOfflineSyncCard(
-                syncQueueCount: _syncQueueCount,
-                onForceSync: () {
-                  if (_syncQueueCount > 0) {
-                    setState(() {
-                      _syncLogs.add("AWS Sync: Uploaded $_syncQueueCount local records to DynamoDB.");
-                      _syncLogs.add("AWS Sync: Synchronized image vectors to S3 Bucket.");
-                      _syncQueueCount = 0;
-                    });
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('AWS Hybrid Sync Completed!'), backgroundColor: AppColors.success));
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No offline records to sync.')));
-                  }
-                },
-                onShowSQLiteLogs: _showSQLiteLogsDialog,
-              ),
-              const SizedBox(height: 12),
-
-              if (_punchStep == 0) ...[
-                // Branch location selector dropdown
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedLocation,
-                  decoration: InputDecoration(
-                    labelText: 'Current Office / Branch Location',
-                    prefixIcon: const Icon(Icons.business_rounded, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  items:
-                      _locations.map((loc) {
-                        return DropdownMenuItem(value: loc, child: Text(loc, style: const TextStyle(fontSize: 13)));
-                      }).toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() {
-                        _selectedLocation = val;
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // Simulated Geo-fence switch (Only when not WFH)
-                if (_selectedLocation != 'Remote / Work From Home (WFH)') ...[
-                  Card(
-                    color: AppColors.primary.withValues(alpha: 0.05),
-                    elevation: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Simulate Location Range',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                          ),
-                          Switch(
-                            value: _isInRange,
-                            onChanged: (val) {
-                              setState(() {
-                                _isInRange = val;
-                              });
-                            },
-                            activeThumbColor: AppColors.primary,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-
-                // Status Geofencing Card
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              _effectiveInRange ? Icons.location_on_rounded : Icons.location_off_rounded,
-                              color: _effectiveInRange ? AppColors.success : AppColors.error,
-                              size: 32,
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _effectiveInRange ? 'Inside Office Radius' : 'Outside Office Radius',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: _effectiveInRange ? AppColors.success : AppColors.error,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _selectedLocation == 'Remote / Work From Home (WFH)'
-                                        ? 'WFH Active (Bypassing geo-fence coordinates)'
-                                        : _effectiveInRange
-                                            ? 'HQ Geo-fence Verified (Range: 100m)'
-                                            : 'Located Outside Allowed Office Geo-fence',
-                                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (_fetchedLatitude != null && _fetchedLongitude != null) ...[
-                          const Divider(height: 24),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'GPS Coordinates Verified:',
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Lat: ${_fetchedLatitude!.toStringAsFixed(6)} • Lng: ${_fetchedLongitude!.toStringAsFixed(6)} • Accuracy: ${_fetchedAccuracy!.toStringAsFixed(1)}m',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: AppColors.textLight,
-                                    fontFamily: 'monospace',
-                                  ),
-                                ),
-                                if (_fetchedTimestamp != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 2.0),
-                                    child: Text(
-                                      'Verified GPS Time: $_fetchedTimestamp',
-                                      style: const TextStyle(fontSize: 9, color: AppColors.textLight),
-                                    ),
-                                  ),
-                                if (_calculatedDistance != null)
-                                  Text(
-                                    'Distance from office center: ${_calculatedDistance!.toStringAsFixed(1)} meters',
-                                    style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        const Divider(height: 32),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Text(
-                              'Shift Timing:',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textLight),
-                            ),
-                            Text(
-                              'General Shift (09:00 AM - 06:00 PM)',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: _triggerPunchInSequence,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _effectiveInRange ? AppColors.primary : AppColors.warning,
-                            minimumSize: const Size(double.infinity, 50),
-                          ),
-                          child: Text(_effectiveInRange ? 'Start Smart Punch In' : 'Punch In Out Of Range'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ] else if (_punchStep == 1) ...[
-                // Location Permission Simulator Dialog / Card
-                AttendancePermissionCard(
-                  isLocationStep: true,
-                  isPermanentlyDenied: _isLocationPermanentlyDenied,
-                  onCancel: () => setState(() => _punchStep = 0),
-                  onOpenSettings: () async {
-                    await openAppSettings();
-                    await _updatePermissionStatuses();
-                  },
-                  onAllowAccess: () async {
-                    final status = await Permission.locationWhenInUse.request();
-                    if (status.isGranted) {
-                      setState(() {
-                        _punchStep = 2; // Next Step: Camera Permission
-                      });
-                      var camStatus = await Permission.camera.status;
-                      setState(() {
-                        _isCameraPermanentlyDenied = camStatus.isPermanentlyDenied;
-                      });
-                    } else {
-                      if (status.isPermanentlyDenied) {
-                        setState(() {
-                          _isLocationPermanentlyDenied = true;
-                        });
-                      } else {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permission denied.')));
-                        }
-                        setState(() => _punchStep = 0);
-                      }
-                    }
-                  },
-                ),
-              ] else if (_punchStep == 2) ...[
-                // Camera Permission Simulator Dialog / Card
-                AttendancePermissionCard(
-                  isLocationStep: false,
-                  isPermanentlyDenied: _isCameraPermanentlyDenied,
-                  onCancel: () => setState(() => _punchStep = 0),
-                  onOpenSettings: () async {
-                    await openAppSettings();
-                    await _updatePermissionStatuses();
-                  },
-                  onAllowAccess: () async {
-                    final status = await Permission.camera.request();
-                    if (status.isGranted) {
-                      _startGeofenceCheck();
-                    } else {
-                      if (status.isPermanentlyDenied) {
-                        setState(() {
-                          _isCameraPermanentlyDenied = true;
-                        });
-                      } else {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Camera permission denied.')));
-                        }
-                        setState(() => _punchStep = 0);
-                      }
-                    }
-                  },
-                ),
-              ] else if (_punchStep == 3) ...[
-                // Geofence Coordinate loading
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Column(
-                      children: [
-                        const CircularProgressIndicator(color: AppColors.primary),
-                        const SizedBox(height: 20),
-                        const Text('Geo-fencing verification in progress...', style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Fetching coordinates for $_selectedLocation',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ] else if (_punchStep == 4) ...[
-                // Face scanner liveness check
-                FaceLivenessScanner(
-                  livenessStep: _livenessStep,
-                  onStartRealLivenessSDK: _startRealLivenessSDK,
-                  onSimulateBlink: _simulateLivenessBlink,
-                  onSimulateHead: _simulateLivenessHead,
-                ),
-              ] else if (_punchStep == 6) ...[
-                // Out of range check-in form
-                OutOfRangeForm(
-                  reasonController: _reasonController,
-                  onSubmit: _submitOutOfRangeRequest,
-                  onCancel: () => setState(() => _punchStep = 0),
-                ),
-              ] else ...[
-                // PUNCHED IN - CIRCULAR TIMER & BREAKS VIEW
-                BreakTimerConsole(
-                  activeActivity: _activeActivity,
-                  livenessSuccess: _livenessSuccess,
-                  simulateOverBreakLimit: _simulateOverBreakLimit,
-                  onSimulateOverBreakLimitChanged: (val) {
-                    setState(() {
-                      _simulateOverBreakLimit = val ?? false;
-                    });
-                  },
-                  timerColor: _getTimerColor(),
-                  timerStatusText: _getTimerStatusText(),
-                  timerValue:
-                      _activeActivity == 3
-                          ? (_simulateOverBreakLimit ? '00:50:00' : '00:40:00')
-                          : _activeActivity == 4
-                              ? (_simulateOverBreakLimit ? '00:20:00' : '00:10:00')
-                              : '05:42:18',
-                  timerLimitText:
-                      _activeActivity == 3
-                          ? 'Lunch Limit: 45m'
-                          : _activeActivity == 4
-                              ? 'Tea Limit: 15m'
-                              : 'Shift Target: 09:00',
-                  breaksHistory: _breaksHistory,
-                  onBreakButtonPressed: (activityCode) {
-                    setState(() {
-                      _activeActivity = _activeActivity == activityCode ? 2 : activityCode;
-                    });
-                  },
-                  onPunchOut: () {
-                    setState(() {
-                      _punchStep = 0; // Punch Out resets to default
-                      _livenessSuccess = false;
-                      _fetchedLatitude = null;
-                      _fetchedLongitude = null;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Punch Out complete. Bio-verification cleared.'),
-                        backgroundColor: AppColors.success,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ] else ...[
-              // SUPERVISOR / TEAM BOARD VIEWPORT
-              SupervisorAttendanceList(teamAttendance: _teamAttendance),
-            ],
+            Icon(Icons.fingerprint, size: 72, color: AppColors.blue500),
+            const SizedBox(height: 20),
+            const Text(
+              'Use Punch In from Dashboard',
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+            ),
           ],
         ),
       ),
     );
   }
+}
 
-  void _showSQLiteLogsDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: Row(
-              children: const [
-                Icon(Icons.storage_rounded, color: AppColors.primary),
-                SizedBox(width: 8),
-                Text('SQLite Encrypted DB Logs'),
+// ─────────────────────────────────────────────────────────────────────────────
+// Step enum
+// ─────────────────────────────────────────────────────────────────────────────
+enum _Step { verifyingLocation, inRange, outOfRange }
+
+const double _officeLat = 23.0225;
+const double _officeLng = 72.5714;
+const double _allowedRadiusMeters = 300;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bottom Sheet — handles location only, then pushes face scanner route
+// ─────────────────────────────────────────────────────────────────────────────
+class _PunchInBottomSheet extends StatefulWidget {
+  const _PunchInBottomSheet();
+  @override
+  State<_PunchInBottomSheet> createState() => _PunchInBottomSheetState();
+}
+
+class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
+  _Step _step = _Step.verifyingLocation;
+
+  // Location
+  double _distanceMeters = 0;
+  String _locationAddress = '';
+  String _locationCoordinates = '';
+  double? _lastLat;
+  double? _lastLng;
+  String _gpsAccuracy = 'Medium';
+  bool _locationError = false;
+  DateTime? _locationTime;
+
+  // Out-of-range form
+  final _reasonController = TextEditingController();
+  String? _selectedDayType;
+  final _formKey = GlobalKey<FormState>();
+
+  // Auto-close
+  Timer? _autoCloseTimer;
+  int _countdown = 120;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLocation();
+  }
+
+  @override
+  void dispose() {
+    _autoCloseTimer?.cancel();
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  // ── Real GPS + Geocoding ─────────────────────────────────────────────────
+  Future<void> _fetchLocation() async {
+    try {
+      bool svcEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!svcEnabled) {
+        _setError('Location services are disabled. Please enable GPS.');
+        return;
+      }
+
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        _setError('Location permission denied. Please allow it in Settings.');
+        return;
+      }
+
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+          timeLimit: Duration(seconds: 20),
+        ),
+      );
+
+      final coordinates =
+          'Lat: ${pos.latitude.toStringAsFixed(6)}, Lng: ${pos.longitude.toStringAsFixed(6)}';
+
+      if (mounted) {
+        setState(() {
+          _locationCoordinates = coordinates;
+          _lastLat = pos.latitude;
+          _lastLng = pos.longitude;
+          _locationAddress = 'Resolving current location...';
+          _locationTime = DateTime.now();
+          _gpsAccuracy = pos.accuracy < 10
+              ? 'High'
+              : pos.accuracy < 35
+              ? 'Medium'
+              : 'Low';
+          _distanceMeters = Geolocator.distanceBetween(
+            pos.latitude,
+            pos.longitude,
+            _officeLat,
+            _officeLng,
+          );
+          _step = _distanceMeters <= _allowedRadiusMeters
+              ? _Step.inRange
+              : _Step.outOfRange;
+          _locationError = false;
+        });
+        _startAutoClose();
+        if (_step == _Step.inRange) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'You are within office premises — launching face scan',
+                ),
+                backgroundColor: Color(0xFF0FBE7C),
+                duration: Duration(milliseconds: 800),
+              ),
+            );
+          }
+          // Small delay to let UI and SnackBar show, then launch face scanner
+          Future.delayed(const Duration(milliseconds: 900), () {
+            if (mounted) _goToFaceScanner();
+          });
+        }
+      }
+
+      // Reverse-geocode in background and update address
+      try {
+        final marks = await placemarkFromCoordinates(
+          pos.latitude,
+          pos.longitude,
+        );
+        if (marks.isNotEmpty && mounted) {
+          setState(() => _locationAddress = _formatPlacemark(marks.first));
+        }
+      } catch (_) {
+        if (mounted) {
+          setState(() => _locationAddress = 'Unable to resolve address');
+        }
+      }
+    } catch (e) {
+      _setError('Could not fetch location. Please try again.');
+    }
+  }
+
+  void _setError(String msg) {
+    if (!mounted) return;
+    setState(() {
+      _locationError = true;
+      _locationAddress = msg;
+      _locationCoordinates = '';
+      _lastLat = null;
+      _lastLng = null;
+      _locationTime = DateTime.now();
+      _step = _Step.outOfRange;
+      _distanceMeters = 0;
+    });
+    _startAutoClose();
+  }
+
+  // ── Timer ────────────────────────────────────────────────────────────────
+  void _startAutoClose() {
+    _countdown = 120;
+    _autoCloseTimer?.cancel();
+    _autoCloseTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() => _countdown--);
+      if (_countdown <= 0) {
+        t.cancel();
+        if (mounted) Navigator.of(context).pop();
+      }
+    });
+  }
+
+  // ── Navigate to face scanner (full-screen route) ──────────────────────────
+  Future<void> _goToFaceScanner() async {
+    _autoCloseTimer?.cancel();
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const FaceScannerPage(),
+      ),
+    );
+    if (!mounted) return;
+    if (result == true) {
+      // Success — show success state briefly then close sheet
+      Navigator.of(context).pop();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle_rounded, color: Colors.white),
+                SizedBox(width: 10),
+                Text(
+                  'Punched In Successfully!',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ],
             ),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _syncLogs.length,
-                itemBuilder:
-                    (context, index) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Text(_syncLogs[index], style: const TextStyle(fontSize: 11, fontFamily: 'monospace')),
+            backgroundColor: Color(0xFF0FBE7C),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } else {
+      // Failed / cancelled — restart auto-close
+      _startAutoClose();
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // BUILD
+  // ─────────────────────────────────────────────────────────────────────────
+  @override
+  Widget build(BuildContext context) {
+    return switch (_step) {
+      _Step.verifyingLocation => _sheetWrap(_buildVerifying()),
+      _Step.inRange => _sheetWrap(_buildInRange()),
+      _Step.outOfRange => _buildOutOfRange(), // full DraggableSheet
+    };
+  }
+
+  Widget _sheetWrap(Widget child) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SafeArea(top: false, child: child),
+    );
+  }
+
+  // ─── Verifying ──────────────────────────────────────────────────────────
+  Widget _buildVerifying() {
+    return SizedBox(
+      height: 370,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _dragHandle(),
+          const Spacer(),
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3F81FF), Color(0xFF2667E0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.blue500.withValues(alpha: 0.28),
+                  blurRadius: 24,
+                  spreadRadius: 4,
+                ),
+              ],
+            ),
+            child: const Icon(Icons.gps_fixed, color: Colors.white, size: 40),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Verifying Location',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Fetching your real-time GPS location…',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 28),
+          const SizedBox(
+            width: 36,
+            height: 36,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation(AppColors.blue500),
+            ),
+          ),
+          const Spacer(),
+        ],
+      ),
+    );
+  }
+
+  // ─── In Range ───────────────────────────────────────────────────────────
+  Widget _buildInRange() {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.62,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _dragHandle(),
+          // Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Location Verified ✓',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0FBE7C),
+                      ),
                     ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${_distanceMeters.toStringAsFixed(1)} m from office',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          // Time + Accuracy
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.access_time,
+                  size: 13,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _formatDT(_locationTime ?? DateTime.now()),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const Spacer(),
+                const Text(
+                  'GPS Accuracy : ',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                _gpsBadge(_gpsAccuracy),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _locationCard(),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF6EE7B7)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF0FBE7C),
+                    size: 20,
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'You are within office premises!',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF065F46),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+          ),
+          const Spacer(),
+          _autoCloseRow(),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+            child: _gradientBtn(
+              label: 'Proceed to Face Scan',
+              onTap: _goToFaceScanner,
+              colors: const [Color(0xFF0FBE7C), Color(0xFF0AAD6F)],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Out of Range ────────────────────────────────────────────────────────
+  Widget _buildOutOfRange() {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.92,
+      minChildSize: 0.55,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, scrollCtrl) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              controller: scrollCtrl,
+              padding: EdgeInsets.zero,
+              children: [
+                // ── Drag handle ───────────────────────────────────────────
+                _dragHandle(),
+
+                // ── UFO illustration ─────────────────────────────────────
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 200,
+                      child: Image.asset(
+                        'assets/images/ufo_abduction.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    // Fade to white at the bottom of the image
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 70,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.white],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Close button
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // ── Content ──────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title
+                      Text(
+                        _locationError
+                            ? 'Location Unavailable'
+                            : 'You are Out of Range',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _locationError
+                            ? 'Unable to fetch location'
+                            : '${_distanceMeters.toStringAsFixed(2)} Meter Away (Air Distance)',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Time + Accuracy
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.access_time,
+                            size: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatDT(_locationTime ?? DateTime.now()),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const Spacer(),
+                          const Text(
+                            'GPS Accuracy : ',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          _gpsBadge(_gpsAccuracy),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Current Location label
+                      const Text(
+                        'Current Location',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _locationCard(),
+                      const SizedBox(height: 20),
+
+                      // ── Day Type ────────────────────────────────────────
+                      const Text(
+                        'Day Type',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: _selectedDayType,
+                        decoration: _inputDeco('Select'),
+                        items:
+                            ['Work From Home', 'Field Work', 'On Duty', 'Other']
+                                .map(
+                                  (o) => DropdownMenuItem(
+                                    value: o,
+                                    child: Text(o),
+                                  ),
+                                )
+                                .toList(),
+                        validator: (v) =>
+                            v == null ? 'Please select a day type' : null,
+                        onChanged: (v) => setState(() => _selectedDayType = v),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ── Out of range reason ─────────────────────────────
+                      const Text(
+                        'Out of range Reason',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _reasonController,
+                        maxLines: 2,
+                        validator: (v) =>
+                            (v == null || v.trim().isEmpty) ? 'Required' : null,
+                        decoration: _inputDeco('Write here'),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Auto-close countdown
+                      _autoCloseRow(),
+                      const SizedBox(height: 14),
+
+                      // Prev / Next
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                side: const BorderSide(
+                                  color: AppColors.blue600,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Prev',
+                                style: TextStyle(
+                                  color: AppColors.blue600,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _gradientBtn(
+                              label: 'Next',
+                              onTap: () {
+                                if (_formKey.currentState!.validate()) {
+                                  _goToFaceScanner();
+                                }
+                              },
+                              colors: const [
+                                AppColors.blue500,
+                                AppColors.blue600,
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Shared helpers
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _dragHandle() => Center(
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      width: 40,
+      height: 4,
+      decoration: BoxDecoration(
+        color: AppColors.gray200,
+        borderRadius: BorderRadius.circular(4),
+      ),
+    ),
+  );
+
+  Widget _autoCloseRow() {
+    final m = _countdown ~/ 60;
+    final s = _countdown % 60;
+    return Center(
+      child: Text(
+        'Auto Close In  ${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}',
+        style: const TextStyle(
+          fontSize: 12,
+          color: AppColors.blue500,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _gpsBadge(String label) {
+    final color = label == 'High'
+        ? const Color(0xFF0FBE7C)
+        : label == 'Medium'
+        ? const Color(0xFFF59E0B)
+        : const Color(0xFFEF4444);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          color: color,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _locationCard() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF0F0),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFFCDD2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 2),
+            child: Icon(Icons.location_on, color: Color(0xFFEF5350), size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _locationAddress.isEmpty
+                      ? 'Fetching address…'
+                      : _locationAddress,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF8B1A1A),
+                    height: 1.4,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (_locationCoordinates.isNotEmpty && !_locationError) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _locationCoordinates,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFFB35A5A),
+                      height: 1.3,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (_step != _Step.inRange) ...[
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () async {
+                await _openMap();
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: _lastLat != null && _lastLng != null
+                    ? Image.network(
+                        'https://staticmap.openstreetmap.de/staticmap.php?center=${_lastLat},${_lastLng}&zoom=15&size=120x120&markers=${_lastLat},${_lastLng},red-pushpin',
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/images/mock_map_thumbnail.png',
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        'assets/images/mock_map_thumbnail.png',
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                      ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  InputDecoration _inputDeco(String hint) => InputDecoration(
+    hintText: hint,
+    hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 13),
+    prefixIcon: const Icon(Icons.edit_note_rounded, color: AppColors.textLight),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    filled: true,
+    fillColor: AppColors.surfacePrimary,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.textfieldBorder),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.textfieldBorder),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.blue500, width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.error),
+    ),
+  );
+
+  String _formatPlacemark(Placemark placeMark) {
+    final parts = <String>[
+      if (placeMark.name?.isNotEmpty == true) placeMark.name!,
+      if (placeMark.subLocality?.isNotEmpty == true) placeMark.subLocality!,
+      if (placeMark.locality?.isNotEmpty == true) placeMark.locality!,
+      if (placeMark.administrativeArea?.isNotEmpty == true)
+        placeMark.administrativeArea!,
+      if (placeMark.postalCode?.isNotEmpty == true) placeMark.postalCode!,
+      if (placeMark.country?.isNotEmpty == true) placeMark.country!,
+    ];
+    return parts.isEmpty ? 'Current location found' : parts.join(', ');
+  }
+
+  Future<void> _openMap() async {
+    if (_lastLat == null || _lastLng == null) return;
+    final lat = _lastLat!;
+    final lng = _lastLng!;
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  Widget _gradientBtn({
+    required String label,
+    required VoidCallback onTap,
+    required List<Color> colors,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: colors),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: colors.last.withValues(alpha: 0.3),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDT(DateTime dt) {
+    String p(int n) => n.toString().padLeft(2, '0');
+    return '${dt.year}-${p(dt.month)}-${p(dt.day)}  ${p(dt.hour)}:${p(dt.minute)}:${p(dt.second)}';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FaceScannerPage — full-screen, hosts FlutterFaceLiveness properly
+// ─────────────────────────────────────────────────────────────────────────────
+class FaceScannerPage extends StatelessWidget {
+  const FaceScannerPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // ── Real liveness scanner ───────────────────────────────────────
+          FlutterFaceLiveness(
+            actions: const [
+              LivenessAction.blink,
+              LivenessAction.smile,
+              LivenessAction.turnLeft,
+            ],
+            config: const LivenessConfig(
+              randomizeActions: true,
+              enableAntiSpoof: true,
+              sessionTimeoutMs: 90000,
+              themeMode: ThemeMode.dark,
+            ),
+            onSuccess: (result) {
+              // Pop back with true = success
+              Navigator.of(context).pop(true);
+            },
+            onFailed: (reason) {
+              // Show a bottom dialog and allow retry or exit
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.white,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                builder: (ctx) => _FailedSheet(
+                  reason: reason,
+                  onRetry: () {
+                    Navigator.pop(ctx); // close sheet
+                    // Rebuild the FaceScannerPage by popping and pushing again
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        fullscreenDialog: true,
+                        builder: (_) => const FaceScannerPage(),
+                      ),
+                    );
+                  },
+                  onCancel: () {
+                    Navigator.pop(ctx); // close sheet
+                    Navigator.of(context).pop(false); // back to bottom sheet
+                  },
+                ),
+              );
+            },
+          ),
+
+          // ── Tips card at bottom ─────────────────────────────────────────
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 24,
+            left: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.7),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Color(0xFFFBBF24),
+                        size: 15,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Remove before scanning',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 6),
+                  _Tip('Sunglasses'),
+                  _Tip('Masks'),
+                  _Tip('Cap / Hat'),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Back / close button ─────────────────────────────────────────
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 12,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(false),
+              child: Container(
+                padding: const EdgeInsets.all(9),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Failure bottom sheet inside face scanner
+// ─────────────────────────────────────────────────────────────────────────────
+class _FailedSheet extends StatelessWidget {
+  final String reason;
+  final VoidCallback onRetry;
+  final VoidCallback onCancel;
+  const _FailedSheet({
+    required this.reason,
+    required this.onRetry,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 4,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.gray200,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.error.withValues(alpha: 0.35),
+                width: 2,
+              ),
+            ),
+            child: const Icon(
+              Icons.face_retouching_off,
+              color: AppColors.error,
+              size: 36,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Verification Failed',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            reason.isNotEmpty
+                ? reason
+                : 'Face liveness check failed. Please try again.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onCancel,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: AppColors.gray400),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: GestureDetector(
+                  onTap: onRetry,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppColors.blue500, AppColors.blue600],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Try Again',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tip row
+// ─────────────────────────────────────────────────────────────────────────────
+class _Tip extends StatelessWidget {
+  final String text;
+  const _Tip(this.text);
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 3),
+      child: Row(
+        children: [
+          const Text(
+            '• ',
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+          Text(
+            text,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 }
