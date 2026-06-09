@@ -16,7 +16,7 @@ final List<OnboardModel> pages = [
     buttonText: "Next",
     secondButtonText: "Skip",
     top: ImagePos(top: 86, left: 9, width: 283),
-    bottom: ImagePos(top: 1, left: 79, width: 1),
+    bottom: ImagePos(top: 190, left: 85, width: 283),
   ),
   OnboardModel(
     topImage: "assets/images/onboarding2_top.png",

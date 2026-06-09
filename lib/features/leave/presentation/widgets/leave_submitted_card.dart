@@ -13,9 +13,13 @@ class LeaveSubmittedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    // Safe dynamic height calculation that expands card to cover the remaining vertical viewport
+    final double dynamicMinHeight = screenHeight - 380 > 320 ? screenHeight - 380 : 320;
+
     if (selectedTab == 0) {
       if (reviewLeaves.isEmpty) {
-        return _noLeaveSubmittedCard();
+        return _noLeaveSubmittedCard(dynamicMinHeight);
       }
       return Column(
         children: reviewLeaves
@@ -30,12 +34,14 @@ class LeaveSubmittedCard extends StatelessWidget {
         statusText: "Approved at 19 Sept 2024",
         statusColor: const Color(0xFF12B76A),
         statusIcon: Icons.check_circle,
+        minHeight: dynamicMinHeight,
       );
     } else {
       return _leaveStatusCard(
         statusText: "Rejected at 19 Sept 2024",
         statusColor: const Color(0xFFF04438),
         statusIcon: Icons.cancel,
+        minHeight: dynamicMinHeight,
       );
     }
   }
@@ -123,10 +129,13 @@ class LeaveSubmittedCard extends StatelessWidget {
     );
   }
 
-  Widget _noLeaveSubmittedCard() {
+  Widget _noLeaveSubmittedCard(double minHeight) {
+    // Dynamic spacer offset to align graphic nicely in the center of the expanded container
+    final double spacerHeight = (minHeight - 240) > 20 ? (minHeight - 240) / 2 : 45.0;
+
     return Container(
       width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 312),
+      constraints: BoxConstraints(minHeight: minHeight),
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -144,7 +153,7 @@ class LeaveSubmittedCard extends StatelessWidget {
             "Leave information",
             style: TextStyle(fontSize: 12, color: Color(0xFF667085)),
           ),
-          const SizedBox(height: 45),
+          SizedBox(height: spacerHeight),
           Center(
             child: Column(
               children: [
@@ -184,9 +193,14 @@ class LeaveSubmittedCard extends StatelessWidget {
     required String statusText,
     required Color statusColor,
     required IconData statusIcon,
+    required double minHeight,
   }) {
+    // Spacer height to separate form details and status row towards the bottom of the card
+    final double spacerHeight = (minHeight - 170) > 20 ? (minHeight - 170) : 20.0;
+
     return Container(
       width: double.infinity,
+      constraints: BoxConstraints(minHeight: minHeight),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -242,7 +256,7 @@ class LeaveSubmittedCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: spacerHeight),
           Row(
             children: [
               Icon(statusIcon, color: statusColor, size: 15),
