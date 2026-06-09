@@ -195,15 +195,16 @@ class LeaveSubmittedCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
-                Icons.calendar_month_outlined,
-                color: Color(0xff7A5AF8),
-                size: 18,
+              Image.asset(
+                'assets/icons/calender.png',
+                width: 18,
+                height: 18,
+                fit: BoxFit.contain,
               ),
-              SizedBox(width: 8),
-              Expanded(
+              const SizedBox(width: 8),
+              const Expanded(
                 child: Text(
                   "18 September 2024",
                   style: TextStyle(

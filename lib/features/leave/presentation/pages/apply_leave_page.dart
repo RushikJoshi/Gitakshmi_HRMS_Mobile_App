@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/features/leave/data/models/leave_model.dart';
-import 'package:gitakshmi_hrms_app/core/widgets/bottomsheet/app_selection_bottom_sheet.dart';
-import 'package:gitakshmi_hrms_app/core/widgets/bottomsheet/app_date_picker.dart';
 
 class ApplyLeaveScreen extends StatefulWidget {
   const ApplyLeaveScreen({super.key});
@@ -379,75 +377,596 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
     );
   }
 
-  void _openTaskDelegationPopup() async {
-    final selected = await AppSelectionBottomSheet.show(
+  void _openTaskDelegationPopup() {
+    String? tempSelected = taskDelegation;
+
+    showModalBottomSheet(
       context: context,
-      title: "Select Task Delegation",
-      subtitle: "Select Leave category",
-      options: taskDelegationList,
-      initialSelected: taskDelegation,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.70,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(9)),
+              ),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Select Task Delegation",
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: Color(0xff101828),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            "Select Leave category",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xff667085),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: taskDelegationList.length,
+                              separatorBuilder: (_, __) =>
+                              const SizedBox(height: 6),
+                              itemBuilder: (context, index) {
+                                final item = taskDelegationList[index];
+                                final isSelected = tempSelected == item;
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    setModalState(() {
+                                      tempSelected = item;
+                                    });
+                                  },
+                                  child: Container(
+                                    height: 56,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? const Color(0xFFF4F1FF)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(7),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? selectedPurple
+                                            : borderColor,
+                                        width: isSelected ? 1.3 : 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            item,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Color(0xFF344054),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        Icon(
+                                          isSelected
+                                              ? Icons.check_circle
+                                              : Icons.radio_button_off,
+                                          color: isSelected
+                                              ? selectedPurple
+                                              : const Color(0xFF98A2B3),
+                                          size: 21,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 40,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: darkPurple),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(22),
+                                ),
+                              ),
+                              child: const Text(
+                                "Cancel",
+                                style: TextStyle(
+                                  color: darkPurple,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SizedBox(
+                            height: 40,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  taskDelegation = tempSelected;
+                                });
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: darkPurple,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(22),
+                                ),
+                              ),
+                              child: const Text(
+                                "Select",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
-    if (selected != null) {
-      setState(() {
-        taskDelegation = selected;
-      });
-    }
   }
 
-  void _openLeaveDurationPopup() async {
-    final initialStart = startDate != null ? DateTime(2024, 11, startDate!) : null;
-    final initialEnd = endDate != null ? DateTime(2024, 11, endDate!) : null;
-    final initialRange = (initialStart != null)
-        ? DateTimeRange(start: initialStart, end: initialEnd ?? initialStart)
-        : null;
-
-    final selectedRange = await AppDatePicker.showRange(
-      context: context,
-      title: "Leave Duration",
-      subtitle: "Select Leave Duration",
-      initialRange: initialRange,
-      firstDate: DateTime(2024, 11, 1),
-      lastDate: DateTime(2024, 11, 30),
+  Widget _dayBox(String day) {
+    return Expanded(
+      child: Container(
+        height: 26,
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color(0xFFEAECF0),
+          borderRadius: BorderRadius.circular(2),
+        ),
+        child: Text(
+          day,
+          style: const TextStyle(fontSize: 14, color: Color(0xff101828)),
+        ),
+      ),
     );
-
-    if (selectedRange != null) {
-      setState(() {
-        startDate = selectedRange.start.day;
-        endDate = selectedRange.end.day;
-        
-        final startStr = "${selectedRange.start.day} Nov";
-        final endStr = "${selectedRange.end.day} Nov";
-        if (selectedRange.start.day == selectedRange.end.day) {
-          leaveDuration = startStr;
-        } else {
-          leaveDuration = "$startStr - $endStr";
-        }
-      });
-    }
   }
 
-  void _openLeaveCategoryPopup() async {
-    final selected = await AppSelectionBottomSheet.show(
+  void _openLeaveDurationPopup() {
+    int? tempStart = startDate;
+    int? tempEnd = endDate;
+
+    showModalBottomSheet(
       context: context,
-      title: "Leave Category",
-      subtitle: "Select Leave category",
-      options: leaveCategories,
-      initialSelected: leaveCategory,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.70,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 26, 20, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Leave Duration",
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: darkText,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Select Leave Duration",
+                      style: TextStyle(fontSize: 14, color: greyText),
+                    ),
+                    const SizedBox(height: 21),
+                    Row(
+                      children: const [
+                        Icon(
+                          Icons.chevron_left_rounded,
+                          color: selectedPurple,
+                          size: 26,
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              "November 2024",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: darkText,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: selectedPurple,
+                          size: 26,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        _dayBox("Sun"),
+                        _dayBox("Mon"),
+                        _dayBox("Tue"),
+                        _dayBox("Wed"),
+                        _dayBox("Thu"),
+                        _dayBox("Fri"),
+                        _dayBox("Sat"),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: GridView.count(
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 7,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 6,
+                        children: [
+                          ...["25", "26", "27", "28", "29", "30"]
+                              .map((e) => _dateText(e, disabled: true)),
+                          ...List.generate(30, (index) {
+                            final day = index + 1;
+                            final bool selected =
+                                day == tempStart || day == tempEnd;
+
+                            final bool between = tempStart != null &&
+                                tempEnd != null &&
+                                day > tempStart! &&
+                                day < tempEnd!;
+
+                            return GestureDetector(
+                              onTap: () {
+                                setModalState(() {
+                                  if (tempStart == null ||
+                                      tempEnd != null ||
+                                      day < tempStart!) {
+                                    tempStart = day;
+                                    tempEnd = null;
+                                  } else {
+                                    tempEnd = day;
+                                  }
+                                });
+                              },
+                              child: Container(
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: selected
+                                      ? selectedPurple
+                                      : between
+                                      ? const Color(0xFFE7DCFF)
+                                      : Colors.transparent,
+                                  shape: selected
+                                      ? BoxShape.circle
+                                      : BoxShape.rectangle,
+                                ),
+                                child: Text(
+                                  "$day",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: selected ? Colors.white : darkText,
+                                    fontWeight: selected
+                                        ? FontWeight.w700
+                                        : FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                          ...["1", "2", "3", "4", "5"]
+                              .map((e) => _dateText(e, disabled: true)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: darkPurple,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            startDate = tempStart;
+                            endDate = tempEnd;
+
+                            if (startDate != null && endDate != null) {
+                              leaveDuration = "$startDate Nov - $endDate Nov";
+                            } else if (startDate != null) {
+                              leaveDuration = "$startDate Nov";
+                            }
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          "Submit Date",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 42,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: darkPurple),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Close Message",
+                          style: TextStyle(
+                            color: darkPurple,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
-    if (selected != null) {
-      setState(() {
-        leaveCategory = selected;
-      });
-    }
+  }
+
+  Widget _dateText(String text, {bool disabled = false}) {
+    return Center(
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 14,
+          color: disabled ? const Color(0xFF98A2B3) : darkText,
+        ),
+      ),
+    );
+  }
+
+  void _openLeaveCategoryPopup() {
+    String? tempSelected = leaveCategory;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.72,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(9)),
+              ),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Leave Category",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: darkText,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            "Select Leave category",
+                            style: TextStyle(fontSize: 12, color: greyText),
+                          ),
+                          const SizedBox(height: 18),
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: leaveCategories.length,
+                              separatorBuilder: (_, __) =>
+                              const SizedBox(height: 6),
+                              itemBuilder: (context, index) {
+                                final item = leaveCategories[index];
+                                final isSelected = tempSelected == item;
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    setModalState(() {
+                                      tempSelected = item;
+                                    });
+                                  },
+                                  child: Container(
+                                    height: 46,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? const Color(0xFFF4F1FF)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(7),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? selectedPurple
+                                            : borderColor,
+                                        width: isSelected ? 1.5 : 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            item,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Color(0xFF344054),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        Icon(
+                                          isSelected
+                                              ? Icons.radio_button_checked
+                                              : Icons.radio_button_off,
+                                          color: isSelected
+                                              ? selectedPurple
+                                              : const Color(0xFF98A2B3),
+                                          size: 22,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 40,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: darkPurple),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(22),
+                                ),
+                              ),
+                              child: const Text(
+                                "Close Message",
+                                style: TextStyle(
+                                  color: darkPurple,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SizedBox(
+                            height: 40,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  leaveCategory = tempSelected;
+                                });
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: darkPurple,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(22),
+                                ),
+                              ),
+                              child: const Text(
+                                "Submit Date",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   InputDecoration _inputDecoration({
     required String hint,
-    required IconData icon,
+    required dynamic icon,
   }) {
     return InputDecoration(
       hintText: hint,
-      prefixIcon: Icon(icon, color: purple, size: 19),
+      prefixIcon: icon is String
+          ? Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Image.asset(
+                icon,
+                width: 19,
+                height: 19,
+                fit: BoxFit.contain,
+              ),
+            )
+          : Icon(icon as IconData, color: purple, size: 19),
       suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded, color: purple),
       hintStyle: const TextStyle(fontSize: 13, color: darkText),
       filled: true,
@@ -481,7 +1000,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   Widget _selectField({
     required String label,
     required String hint,
-    required IconData icon,
+    required dynamic icon,
     required String? value,
     required VoidCallback onTap,
   }) {
@@ -613,7 +1132,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
           _selectField(
             label: "Leave Duration",
             hint: "Select Duration",
-            icon: Icons.calendar_month_rounded,
+            icon: 'assets/icons/calender.png',
             value: leaveDuration,
             onTap: _openLeaveDurationPopup,
           ),
