@@ -87,15 +87,23 @@ class _ExpenseManagementPageState extends State<ExpenseManagementPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Curved Purple Header Card
-            const ExpenseHeaderCard(),
-
-            // Overlapping Stats Card
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: ExpenseStatsCard(),
+            // Overlapping Header and Stats Card using a Stack
+            SizedBox(
+              height: 320,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const ExpenseHeaderCard(),
+                  Positioned(
+                    top: 170, // Overlaps by 60px since Header is 230px
+                    left: 16,
+                    right: 16,
+                    child: const ExpenseStatsCard(),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             // Horizontal Tab Selector
             Padding(
@@ -157,116 +165,89 @@ class ExpenseSummaryItem {
 // SEPARATE WIDGETS
 // ----------------------------------------------------
 
-/// 1. Custom Wave Clipper for Purple Header
-class HeaderClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.lineTo(0, size.height - 48);
-
-    // Smooth bezier curve to match wave shape in mockup
-    path.quadraticBezierTo(
-      size.width * 0.35,
-      size.height,
-      size.width * 0.7,
-      size.height - 35,
-    );
-    path.quadraticBezierTo(
-      size.width * 0.85,
-      size.height - 50,
-      size.width,
-      size.height - 25,
-    );
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-/// 2. Header Card widget with flying card image
+/// 1. Header Card widget with flying card image (with rounded bottom corners)
 class ExpenseHeaderCard extends StatelessWidget {
   const ExpenseHeaderCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: HeaderClipper(),
-      child: Container(
-        height: 220,
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF8C5CF8),
-              Color(0xFF6A36EF),
-            ],
-          ),
+    return Container(
+      height: 230,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF8C5CF8),
+            Color(0xFF6A36EF),
+          ],
         ),
-        child: SafeArea(
-          bottom: false,
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 20, top: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () => Navigator.pop(context),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 20, top: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text(
+                    "Expense Summary",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
                     ),
-                    const SizedBox(height: 14),
-                    const Text(
-                      "Expense Summary",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Claim your expenses here.",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Claim your expenses here.",
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              // Floating credit card with rainbow trail
-              Positioned(
-                right: 8,
-                top: 24,
-                child: Image.asset(
-                  "assets/images/credit_card.png",
-                  height: 110,
-                  width: 150,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const SizedBox.shrink();
-                  },
-                ),
+            ),
+            // Floating credit card with rainbow trail
+            Positioned(
+             // right: -2,
+              left: 252,
+              top: 18,
+              child: Image.asset(
+                "assets/images/credit_card.png",
+                height: 110,
+                width: 150,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const SizedBox.shrink();
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// 3. Stats Card overlapping the header
+/// 2. Stats Card overlapping the header
 class ExpenseStatsCard extends StatelessWidget {
   const ExpenseStatsCard({super.key});
 
@@ -397,7 +378,7 @@ class ExpenseStatsCard extends StatelessWidget {
   }
 }
 
-/// 4. Horizontal Tab Selector with rounded active pills and counts
+/// 3. Horizontal Tab Selector with rounded active pills and counts
 class ExpenseTabSelector extends StatelessWidget {
   final int activeIndex;
   final int reviewCount;
@@ -480,7 +461,7 @@ class ExpenseTabSelector extends StatelessWidget {
   }
 }
 
-/// 5. Scrollable List of Expense Items
+/// 4. Scrollable List of Expense Items
 class ExpenseCardList extends StatelessWidget {
   final List<ExpenseSummaryItem> expenses;
   final int activeTabIndex;
@@ -521,224 +502,229 @@ class ExpenseCardList extends StatelessWidget {
     final bool isApproved = activeTabIndex == 1;
     final bool isRejected = activeTabIndex == 2;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Date Header
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Row(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEAECF0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Date Header inside the card
+          Row(
             children: [
               const Icon(
                 Icons.calendar_today_outlined,
-                size: 13,
+                size: 14,
                 color: Color(0xFF7A5AF8),
               ),
               const SizedBox(width: 6),
               Text(
                 item.date,
                 style: const TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
                   color: Color(0xFF101828),
                 ),
               ),
             ],
           ),
-        ),
-        // Item Details Box
-        Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFEAECF0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.015),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Type",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF667085),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        item.type,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF344054),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        "Total Expense",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF667085),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        "₹${item.amount.toStringAsFixed(0)}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF344054),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              // Approved Status Footer
-              if (isApproved && item.approvedDate != null) ...[
-                const SizedBox(height: 12),
-                const Divider(color: Color(0xFFF2F4F7), height: 1),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          const SizedBox(height: 12),
+
+          // Inner Grey Box containing details
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFEAECF0)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.check_circle_rounded,
-                          color: Colors.green,
-                          size: 15,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          "Approved at ${item.approvedDate}",
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ],
+                    const Text(
+                      "Type",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF667085),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    Row(
-                      children: [
-                        const Text(
-                          "By ",
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            color: Color(0xFF667085),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Container(
-                          width: 18,
-                          height: 18,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color(0xFFFFEAD5),
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.person, size: 10, color: Colors.orange),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          item.approvedBy ?? "Elaine",
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF344054),
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 4),
+                    Text(
+                      item.type,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF344054),
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      "Total Expense",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF667085),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "₹${item.amount.toStringAsFixed(0)}",
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF344054),
+                      ),
                     ),
                   ],
                 ),
               ],
-              // Rejected Status Footer
-              if (isRejected && item.approvedDate != null) ...[
-                const SizedBox(height: 12),
-                const Divider(color: Color(0xFFF2F4F7), height: 1),
-                const SizedBox(height: 12),
+            ),
+          ),
+
+          // Approved Status Footer
+          if (isApproved && item.approvedDate != null) ...[
+            const SizedBox(height: 12),
+            const Divider(color: Color(0xFFF2F4F7), height: 1),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.cancel_rounded,
-                          color: Colors.red,
-                          size: 15,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          "Rejected at ${item.approvedDate}",
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.green,
+                      size: 15,
                     ),
-                    Row(
-                      children: [
-                        const Text(
-                          "By ",
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            color: Color(0xFF667085),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Container(
-                          width: 18,
-                          height: 18,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Color(0xFFFFEAD5),
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.person, size: 10, color: Colors.orange),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          item.approvedBy ?? "Elaine",
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF344054),
-                          ),
-                        ),
-                      ],
+                    const SizedBox(width: 5),
+                    Text(
+                      "Approved at ${item.approvedDate}",
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Text(
+                      "By ",
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: Color(0xFF667085),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFFFEAD5),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.person, size: 10, color: Colors.orange),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      item.approvedBy ?? "Elaine",
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF344054),
+                      ),
                     ),
                   ],
                 ),
               ],
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+
+          // Rejected Status Footer
+          if (isRejected && item.approvedDate != null) ...[
+            const SizedBox(height: 12),
+            const Divider(color: Color(0xFFF2F4F7), height: 1),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.cancel_rounded,
+                      color: Colors.red,
+                      size: 15,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      "Rejected at ${item.approvedDate}",
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Text(
+                      "By ",
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: Color(0xFF667085),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFFFEAD5),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.person, size: 10, color: Colors.orange),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      item.approvedBy ?? "Elaine",
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF344054),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
