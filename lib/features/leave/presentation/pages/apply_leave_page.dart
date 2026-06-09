@@ -17,8 +17,20 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   int? endDate;
 
   final TextEditingController phoneController =
-  TextEditingController(text: '+62 82150005000');
+  TextEditingController(text: 'enter number');
   final TextEditingController descriptionController = TextEditingController();
+
+  static const Map<String, String> countryPrefixes = {
+    'IND': '+91',
+    'INA': '+62',
+    'USA': '+1',
+    'UK': '+44',
+    'SGP': '+65',
+    'UAE': '+971',
+  };
+
+  late String selectedCountry;
+  late TextEditingController subscriberPhoneController;
 
   static const Color bgColor = Color(0xFFF1F1FF);
   static const Color purple = Color(0xFF6938EF);
@@ -49,7 +61,34 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    String initialText = phoneController.text.trim();
+    String detectedCountry = 'INA';
+    String subscriberNumber = initialText;
+
+    for (var entry in countryPrefixes.entries) {
+      if (initialText.startsWith(entry.value)) {
+        detectedCountry = entry.key;
+        subscriberNumber = initialText.substring(entry.value.length).trim();
+        break;
+      }
+    }
+
+    selectedCountry = detectedCountry;
+    subscriberPhoneController = TextEditingController(text: subscriberNumber);
+    subscriberPhoneController.addListener(_updatePhoneController);
+  }
+
+  void _updatePhoneController() {
+    final prefix = countryPrefixes[selectedCountry] ?? '';
+    phoneController.text = '$prefix ${subscriberPhoneController.text}'.trim();
+  }
+
+  @override
   void dispose() {
+    subscriberPhoneController.removeListener(_updatePhoneController);
+    subscriberPhoneController.dispose();
     phoneController.dispose();
     descriptionController.dispose();
     super.dispose();
@@ -1025,27 +1064,57 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
       children: [
         _label("Emergency Contact During Leave Period"),
         TextFormField(
-          controller: phoneController,
+          controller: subscriberPhoneController,
           keyboardType: TextInputType.phone,
           style: const TextStyle(fontSize: 13, color: darkText),
           decoration: InputDecoration(
             prefixIcon: SizedBox(
-              width: 68,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
-                    "INA",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: darkText,
-                      fontWeight: FontWeight.w500,
-                    ),
+              width: 80,
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedCountry,
+                  icon: const Padding(
+                    padding: EdgeInsets.only(right: 8.0),
+                    child: Icon(Icons.keyboard_arrow_down_rounded, color: purple, size: 18),
                   ),
-                  SizedBox(width: 4),
-                  Icon(Icons.keyboard_arrow_down_rounded,
-                      color: purple, size: 18),
-                ],
+                  alignment: Alignment.center,
+                  selectedItemBuilder: (BuildContext context) {
+                    return countryPrefixes.keys.map<Widget>((String key) {
+                      return Center(
+                        child: Text(
+                          key,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: darkText,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      );
+                    }).toList();
+                  },
+                  items: countryPrefixes.keys.map<DropdownMenuItem<String>>((String key) {
+                    final prefix = countryPrefixes[key];
+                    return DropdownMenuItem<String>(
+                      value: key,
+                      child: Text(
+                        "$key ($prefix)",
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: darkText,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        selectedCountry = newValue;
+                        _updatePhoneController();
+                      });
+                    }
+                  },
+                ),
               ),
             ),
             filled: true,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/phone_sign_in_page.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/signup_page.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/pages/dashboard_page.dart';
-
-import '../../../dashboard/presentation/pages/dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -62,196 +62,199 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: const Color(0xFF17172B),
       body: SafeArea(
         child: Center(
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(22),
-                topRight: Radius.circular(22),
+          child: ResponsiveCenteredView(
+            maxWidth: 500,
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(22.r),
+                  topRight: Radius.circular(22.r),
+                ),
               ),
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(26, 30, 26, 30),
-              child: Column(
-                children: [
-                  Image.asset(
-                    "assets/images/logo.png",
-                    height: 92,
-                    fit: BoxFit.contain,
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  const Text(
-                    "Sign In",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(26.w, 30.h, 26.w, 30.h),
+                child: Column(
+                  children: [
+                    Image.asset(
+                      "assets/images/logo.png",
+                      height: 92.h,
+                      fit: BoxFit.contain,
                     ),
-                  ),
 
-                  const SizedBox(height: 4),
+                    SizedBox(height: 8.h),
 
-                  const Text(
-                    "Sign in to my account",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF475467),
+                    Text(
+                      "Sign In",
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 28),
+                    SizedBox(height: 4.h),
 
-                  _label("Email"),
-                  const SizedBox(height: 8),
-                  _inputField(
-                    controller: emailController,
-                    hint: "My Email",
-                    icon: Icons.mail_outline_rounded,
-                    errorText: emailError,
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  _label("Password"),
-                  const SizedBox(height: 8),
-                  _inputField(
-                    controller: passwordController,
-                    hint: "My Password",
-                    icon: Icons.lock_outline_rounded,
-                    errorText: passwordError,
-                    obscureText: isPasswordHide,
-                    suffixIcon: isPasswordHide
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    onSuffixTap: () {
-                      setState(() {
-                        isPasswordHide = !isPasswordHide;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            rememberMe = !rememberMe;
-                          });
-                        },
-                        child: Icon(
-                          rememberMe
-                              ? Icons.check_box_rounded
-                              : Icons.check_box_outline_blank_rounded,
-                          color: AppColors.border,
-                          size: 18,
-                        ),
+                    Text(
+                      "Sign in to my account",
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF475467),
                       ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        "Remember Me",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () {},
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text(
-                          "Forgot Password",
-                          style: TextStyle(
+                    ),
+
+                    SizedBox(height: 28.h),
+
+                    _label("Email"),
+                    SizedBox(height: 8.h),
+                    _inputField(
+                      controller: emailController,
+                      hint: "My Email",
+                      icon: Icons.mail_outline_rounded,
+                      errorText: emailError,
+                    ),
+
+                    SizedBox(height: 18.h),
+
+                    _label("Password"),
+                    SizedBox(height: 8.h),
+                    _inputField(
+                      controller: passwordController,
+                      hint: "My Password",
+                      icon: Icons.lock_outline_rounded,
+                      errorText: passwordError,
+                      obscureText: isPasswordHide,
+                      suffixIcon: isPasswordHide
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      onSuffixTap: () {
+                        setState(() {
+                          isPasswordHide = !isPasswordHide;
+                        });
+                      },
+                    ),
+
+                    SizedBox(height: 10.h),
+
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              rememberMe = !rememberMe;
+                            });
+                          },
+                          child: Icon(
+                            rememberMe
+                                ? Icons.check_box_rounded
+                                : Icons.check_box_outline_blank_rounded,
                             color: AppColors.border,
-                            fontSize: 12,
+                            size: 18.sp,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  _gradientButton("Sign In"),
-
-                  const SizedBox(height: 34),
-
-                  const Row(
-                    children: [
-                      Expanded(child: Divider(color: Color(0xFFE4E7EC))),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          "OR",
+                        SizedBox(width: 6.w),
+                        Text(
+                          "Remember Me",
                           style: TextStyle(
-                            color: Color(0xFFB0B7C3),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 12.sp,
+                            color: Colors.black,
                           ),
                         ),
-                      ),
-                      Expanded(child: Divider(color: Color(0xFFE4E7EC))),
-                    ],
-                  ),
-
-                  const SizedBox(height: 34),
-
-                  _outlineButton(
-                    text: "Sign in With Employee ID",
-                    icon: Icons.badge_rounded,
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  _outlineButton(
-                    text: "Sign in With Phone",
-                    icon: Icons.phone_rounded,
-                  ),
-
-                  const SizedBox(height: 34),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Don’t have an account? ",
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SignUpScreen(),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            "Forgot Password",
+                            style: TextStyle(
+                              color: AppColors.border,
+                              fontSize: 12.sp,
                             ),
-                          );
-                        },
-                        child: const Text(
-                          "Sign Up Here",
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.border,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+
+                    SizedBox(height: 24.h),
+
+                    _gradientButton("Sign In"),
+
+                    SizedBox(height: 34.h),
+
+                    Row(
+                      children: [
+                        const Expanded(child: Divider(color: Color(0xFFE4E7EC))),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          child: Text(
+                            "OR",
+                            style: TextStyle(
+                              color: const Color(0xFFB0B7C3),
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const Expanded(child: Divider(color: Color(0xFFE4E7EC))),
+                      ],
+                    ),
+
+                    SizedBox(height: 34.h),
+
+                    _outlineButton(
+                      text: "Sign in With Employee ID",
+                      icon: Icons.badge_rounded,
+                    ),
+
+                    SizedBox(height: 14.h),
+
+                    _outlineButton(
+                      text: "Sign in With Phone",
+                      icon: Icons.phone_rounded,
+                    ),
+
+                    SizedBox(height: 34.h),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Don’t have an account? ",
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SignUpScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Sign Up Here",
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.border,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -265,9 +268,9 @@ class _LoginPageState extends State<LoginPage> {
       alignment: Alignment.centerLeft,
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Color(0xFF667085),
+        style: TextStyle(
+          fontSize: 12.sp,
+          color: const Color(0xFF667085),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -289,10 +292,10 @@ class _LoginPageState extends State<LoginPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: 48,
+          height: 48.h,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(7.r),
             boxShadow: [
               BoxShadow(
                 color: hasError
@@ -306,9 +309,9 @@ class _LoginPageState extends State<LoginPage> {
           child: TextField(
             controller: controller,
             obscureText: obscureText,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
-              fontSize: 13,
+              fontSize: 13.sp,
             ),
             onChanged: (value) {
               if (hasError) {
@@ -325,40 +328,40 @@ class _LoginPageState extends State<LoginPage> {
               filled: true,
               fillColor: Colors.white,
               hintText: hint,
-              hintStyle: const TextStyle(
-                color: Color(0xFF98A2B3),
-                fontSize: 13,
+              hintStyle: TextStyle(
+                color: const Color(0xFF98A2B3),
+                fontSize: 13.sp,
               ),
               prefixIcon: Icon(
                 icon,
                 color: hasError ? Colors.red : AppColors.border,
-                size: 20,
+                size: 20.sp,
               ),
               suffixIcon: hasError && hint.toLowerCase().contains("email")
-                  ? const Icon(
-                Icons.error_outline,
-                color: Colors.red,
-                size: 20,
-              )
+                  ? Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 20.sp,
+                    )
                   : suffixIcon != null
-                  ? GestureDetector(
-                onTap: onSuffixTap,
-                child: Icon(
-                  suffixIcon,
-                  color: hasError ? Colors.red : AppColors.border,
-                  size: 20,
-                ),
-              )
-                  : null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                      ? GestureDetector(
+                          onTap: onSuffixTap,
+                          child: Icon(
+                            suffixIcon,
+                            color: hasError ? Colors.red : AppColors.border,
+                            size: 20.sp,
+                          ),
+                        )
+                      : null,
+              contentPadding: EdgeInsets.symmetric(horizontal: 14.w),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(7.r),
                 borderSide: BorderSide(
                   color: hasError ? Colors.red : const Color(0xFF98A2B3),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(7.r),
                 borderSide: BorderSide(
                   color: hasError ? Colors.red : const Color(0xFF9B8AFB),
                   width: 1.5,
@@ -370,12 +373,12 @@ class _LoginPageState extends State<LoginPage> {
 
         if (errorText != null)
           Padding(
-            padding: const EdgeInsets.only(top: 6, left: 2),
+            padding: EdgeInsets.only(top: 6.h, left: 2.w),
             child: Text(
               errorText,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.red,
-                fontSize: 11,
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -386,10 +389,10 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _gradientButton(String text) {
     return Container(
-      height: 54,
+      height: 54.h,
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(28.r),
         gradient: const LinearGradient(
           colors: [
             AppColors.button_grad_1,
@@ -404,14 +407,14 @@ class _LoginPageState extends State<LoginPage> {
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(28.r),
           ),
         ),
         child: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -424,7 +427,7 @@ class _LoginPageState extends State<LoginPage> {
     required IconData icon,
   }) {
     return SizedBox(
-      height: 50,
+      height: 50.h,
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: () {
@@ -438,13 +441,13 @@ class _LoginPageState extends State<LoginPage> {
         icon: Icon(
           icon,
           color: AppColors.border,
-          size: 22,
+          size: 22.sp,
         ),
         label: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.border,
-            fontSize: 13,
+            fontSize: 13.sp,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -454,7 +457,7 @@ class _LoginPageState extends State<LoginPage> {
             width: 1.4,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(28.r),
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/pages/add_expense_page.dart';
 
 class ExpenseManagementPage extends StatefulWidget {
   const ExpenseManagementPage({super.key});
@@ -82,8 +83,27 @@ class _ExpenseManagementPageState extends State<ExpenseManagementPage> {
     final approvedCount = _expenses.where((e) => e.status == ExpenseStatus.approved).length;
     final rejectedCount = _expenses.where((e) => e.status == ExpenseStatus.rejected).length;
 
+    const Color fabPurple = Color(0xff6938EF);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FC),
+      floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
+        backgroundColor: fabPurple,
+        onPressed: () async {
+          // final result = await Navigator.push<ExpenseSummaryItem>(
+          //   context,
+          //   MaterialPageRoute(builder: (_) => const ApplyExpenseScreen()),
+          // );
+          // if (result != null) {
+          //   setState(() {
+          //     _expenses.insert(0, result);
+          //     _activeTabIndex = 0; // switch to Review tab
+          //   });
+          // }
+        },
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [

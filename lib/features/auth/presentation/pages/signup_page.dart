@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/login_page.dart';
-import 'package:gitakshmi_hrms_app/features/dashboard/presentation/pages/dashboard_page.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -132,177 +133,182 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(26, 20, 26, 20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                Image.asset(
-                  "assets/images/logo.png",
-                  height: 92,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Register Using Your Credentials",
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF475467),
-                  ),
-                ),
-                const SizedBox(height: 28),
-
-                _label("Email"),
-                const SizedBox(height: 8),
-                _inputField(
-                  controller: emailController,
-                  hint: "Tonald@wo",
-                  icon: Icons.mail_outline_rounded,
-                  errorText: emailError,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 18),
-
-                _label("Phone Number"),
-                const SizedBox(height: 8),
-                _inputField(
-                  controller: phoneController,
-                  hint: "+62 82150005000",
-                  errorText: phoneError,
-                  keyboardType: TextInputType.phone,
-                  isPhoneField: true,
-                ),
-                const SizedBox(height: 18),
-
-                _label("Company ID"),
-                const SizedBox(height: 8),
-                _inputField(
-                  controller: companyIdController,
-                  hint: "1015015",
-                  icon: Icons.mail_outline_rounded,
-                  errorText: companyIdError,
-                ),
-                const SizedBox(height: 18),
-
-                _label("Password"),
-                const SizedBox(height: 8),
-                _inputField(
-                  controller: passwordController,
-                  hint: "••••••••",
-                  icon: Icons.fingerprint_rounded,
-                  errorText: passwordError,
-                  obscureText: isPasswordHide,
-                  suffixIcon: isPasswordHide
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  onSuffixTap: () {
-                    setState(() {
-                      isPasswordHide = !isPasswordHide;
-                    });
-                  },
-                ),
-                const SizedBox(height: 18),
-
-                _label("Confirm Password"),
-                const SizedBox(height: 8),
-                _inputField(
-                  controller: confirmPasswordController,
-                  hint: "••••••••",
-                  icon: Icons.fingerprint_rounded,
-                  errorText: confirmPasswordError,
-                  obscureText: isConfirmPasswordHide,
-                  suffixIcon: isConfirmPasswordHide
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  onSuffixTap: () {
-                    setState(() {
-                      isConfirmPasswordHide = !isConfirmPasswordHide;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // Terms and Conditions checkbox row
-                Row(
+        child: Center(
+          child: ResponsiveCenteredView(
+            maxWidth: 500,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(26.w, 20.h, 26.w, 20.h),
+              child: Form(
+                key: _formKey,
+                child: Column(
                   children: [
-                    GestureDetector(
-                      onTap: () => setState(() => agree = !agree),
-                      child: Icon(
-                        agree
-                            ? Icons.check_box_rounded
-                            : Icons.check_box_outline_blank_rounded,
-                        color: AppColors.border,
-                        size: 20,
+                    SizedBox(height: 10.h),
+                    Image.asset(
+                      "assets/images/logo.png",
+                      height: 92.h,
+                      fit: BoxFit.contain,
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      "Register Using Your Credentials",
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF475467),
                       ),
                     ),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: openTermsScreen,
-                        child: const Text.rich(
-                          TextSpan(
-                            text: "I agree with ",
-                            style: TextStyle(
-                              color: Color(0xFF101828),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: "terms & conditions",
-                                style: TextStyle(color: AppColors.border),
-                              ),
-                              TextSpan(text: " and "),
-                              TextSpan(
-                                text: "privacy policy",
-                                style: TextStyle(color: AppColors.border),
-                              ),
-                            ],
+                    SizedBox(height: 28.h),
+
+                    _label("Email"),
+                    SizedBox(height: 8.h),
+                    _inputField(
+                      controller: emailController,
+                      hint: "Tonald@wo",
+                      icon: Icons.mail_outline_rounded,
+                      errorText: emailError,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    SizedBox(height: 18.h),
+
+                    _label("Phone Number"),
+                    SizedBox(height: 8.h),
+                    _inputField(
+                      controller: phoneController,
+                      hint: "+62 82150005000",
+                      errorText: phoneError,
+                      keyboardType: TextInputType.phone,
+                      isPhoneField: true,
+                    ),
+                    SizedBox(height: 18.h),
+
+                    _label("Company ID"),
+                    SizedBox(height: 8.h),
+                    _inputField(
+                      controller: companyIdController,
+                      hint: "1015015",
+                      icon: Icons.mail_outline_rounded,
+                      errorText: companyIdError,
+                    ),
+                    SizedBox(height: 18.h),
+
+                    _label("Password"),
+                    SizedBox(height: 8.h),
+                    _inputField(
+                      controller: passwordController,
+                      hint: "••••••••",
+                      icon: Icons.fingerprint_rounded,
+                      errorText: passwordError,
+                      obscureText: isPasswordHide,
+                      suffixIcon: isPasswordHide
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      onSuffixTap: () {
+                        setState(() {
+                          isPasswordHide = !isPasswordHide;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 18.h),
+
+                    _label("Confirm Password"),
+                    SizedBox(height: 8.h),
+                    _inputField(
+                      controller: confirmPasswordController,
+                      hint: "••••••••",
+                      icon: Icons.fingerprint_rounded,
+                      errorText: confirmPasswordError,
+                      obscureText: isConfirmPasswordHide,
+                      suffixIcon: isConfirmPasswordHide
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      onSuffixTap: () {
+                        setState(() {
+                          isConfirmPasswordHide = !isConfirmPasswordHide;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 20.h),
+
+                    // Terms and Conditions checkbox row
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => setState(() => agree = !agree),
+                          child: Icon(
+                            agree
+                                ? Icons.check_box_rounded
+                                : Icons.check_box_outline_blank_rounded,
+                            color: AppColors.border,
+                            size: 20.sp,
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-
-                _gradientButton("Sign Up"),
-                const SizedBox(height: 34),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Already have an account? ",
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
-                        );
-                      },
-                      child: const Text(
-                        "Sign in here",
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.border,
+                        SizedBox(width: 7.w),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: openTermsScreen,
+                            child: Text.rich(
+                              TextSpan(
+                                text: "I agree with ",
+                                style: TextStyle(
+                                  color: const Color(0xFF101828),
+                                  fontSize: 11.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                children: const [
+                                  TextSpan(
+                                    text: "terms & conditions",
+                                    style: TextStyle(color: AppColors.border),
+                                  ),
+                                  TextSpan(text: " and "),
+                                  TextSpan(
+                                    text: "privacy policy",
+                                    style: TextStyle(color: AppColors.border),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
+                    SizedBox(height: 28.h),
+
+                    _gradientButton("Sign Up"),
+                    SizedBox(height: 34.h),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Already have an account? ",
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LoginPage()),
+                            );
+                          },
+                          child: Text(
+                            "Sign in here",
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.border,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.h),
                   ],
                 ),
-                const SizedBox(height: 20),
-              ],
+              ),
             ),
           ),
         ),
@@ -315,9 +321,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       alignment: Alignment.centerLeft,
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Color(0xFF667085),
+        style: TextStyle(
+          fontSize: 12.sp,
+          color: const Color(0xFF667085),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -341,10 +347,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: 48,
+          height: 48.h,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(7.r),
             boxShadow: [
               BoxShadow(
                 color: hasError
@@ -359,9 +365,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
             controller: controller,
             obscureText: obscureText,
             keyboardType: keyboardType,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
-              fontSize: 13,
+              fontSize: 13.sp,
             ),
             onChanged: (value) {
               if (hasError) {
@@ -378,42 +384,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
               filled: true,
               fillColor: Colors.white,
               hintText: hint,
-              hintStyle: const TextStyle(
-                color: Color(0xFF98A2B3),
-                fontSize: 13,
+              hintStyle: TextStyle(
+                color: const Color(0xFF98A2B3),
+                fontSize: 13.sp,
               ),
               prefixIcon: isPhoneField
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const SizedBox(width: 14),
-                        const Text(
+                        SizedBox(width: 14.w),
+                        Text(
                           "INA",
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             fontWeight: FontWeight.w700,
                             color: Colors.black87,
                           ),
                         ),
-                        const Icon(
+                        Icon(
                           Icons.keyboard_arrow_down_rounded,
-                          color: Color(0xFF98A2B3),
-                          size: 18,
+                          color: const Color(0xFF98A2B3),
+                          size: 18.sp,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Container(
-                          height: 20,
+                          height: 20.h,
                           width: 1.2,
                           color: const Color(0xFFD0D5DD),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: 10.w),
                       ],
                     )
                   : icon != null
                       ? Icon(
                           icon,
                           color: hasError ? Colors.red : AppColors.border,
-                          size: 20,
+                          size: 20.sp,
                         )
                       : null,
               suffixIcon: suffixIcon != null
@@ -422,19 +428,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: Icon(
                         suffixIcon,
                         color: hasError ? Colors.red : AppColors.border,
-                        size: 20,
+                        size: 20.sp,
                       ),
                     )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+              contentPadding: EdgeInsets.symmetric(horizontal: 14.w),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(7.r),
                 borderSide: BorderSide(
                   color: hasError ? Colors.red : const Color(0xFF98A2B3),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(7.r),
                 borderSide: BorderSide(
                   color: hasError ? Colors.red : const Color(0xFF9B8AFB),
                   width: 1.5,
@@ -445,12 +451,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
         if (errorText != null)
           Padding(
-            padding: const EdgeInsets.only(top: 6, left: 2),
+            padding: EdgeInsets.only(top: 6.h, left: 2.w),
             child: Text(
               errorText,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.red,
-                fontSize: 11,
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -461,10 +467,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _gradientButton(String text) {
     return Container(
-      height: 54,
+      height: 54.h,
       width: double.infinity,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(28.r),
         gradient: const LinearGradient(
           colors: [
             AppColors.button_grad_1,
@@ -479,14 +485,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(28.r),
           ),
         ),
         child: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -504,114 +510,117 @@ class TermsPrivacyScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF1F1F1F),
       body: SafeArea(
         child: Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 28),
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(14),
+          child: ResponsiveCenteredView(
+            maxWidth: 500,
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 28.w),
+              padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 24.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(14.r),
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                const Text(
-                  "Terms & Conditions and\nPrivacy Policy",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF101828),
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
+              child: Column(
+                children: [
+                  Text(
+                    "Terms & Conditions and\nPrivacy Policy",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: const Color(0xFF101828),
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 26),
+                  SizedBox(height: 26.h),
 
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    color: const Color(0xFFF8FAFC),
-                    child: const SingleChildScrollView(
-                      child: Text(
-                        termsText,
-                        style: TextStyle(
-                          color: Color(0xFF101828),
-                          fontSize: 11,
-                          height: 1.35,
-                          fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.all(12.w),
+                      color: const Color(0xFFF8FAFC),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          termsText,
+                          style: TextStyle(
+                            color: const Color(0xFF101828),
+                            fontSize: 11.sp,
+                            height: 1.35,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
 
-                SizedBox(
-                  height: 48,
-                  width: double.infinity,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          AppColors.button_grad_1,
-                          AppColors.button_grad_2,
-                          AppColors.button_grad_3,
-                        ],
+                  SizedBox(
+                    height: 48.h,
+                    width: double.infinity,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            AppColors.button_grad_1,
+                            AppColors.button_grad_2,
+                            AppColors.button_grad_3,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(28.r),
                       ),
-                      borderRadius: BorderRadius.circular(28),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context, true);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28.r),
+                          ),
+                        ),
+                        child: Text(
+                          "I Agree",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
-                    child: ElevatedButton(
+                  ),
+
+                  SizedBox(height: 12.h),
+
+                  SizedBox(
+                    height: 48.h,
+                    width: double.infinity,
+                    child: OutlinedButton(
                       onPressed: () {
-                        Navigator.pop(context, true);
+                        Navigator.pop(context, false);
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: AppColors.border,
+                          width: 1.2,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(28.r),
                         ),
                       ),
-                      child: const Text(
-                        "I Agree",
+                      child: Text(
+                        "Decline",
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
+                          color: AppColors.border,
+                          fontSize: 13.sp,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ),
-                ),
-
-                const SizedBox(height: 12),
-
-                SizedBox(
-                  height: 48,
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context, false);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                        color: AppColors.border,
-                        width: 1.2,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                    ),
-                    child: const Text(
-                      "Decline",
-                      style: TextStyle(
-                        color: AppColors.border,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
