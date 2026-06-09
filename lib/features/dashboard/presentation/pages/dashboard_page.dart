@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
 import 'package:gitakshmi_hrms_app/features/attendance/presentation/pages/attendance_page.dart';
 import 'package:gitakshmi_hrms_app/features/notification/presentation/pages/notification_page.dart';
@@ -37,40 +39,40 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return SingleChildScrollView(
       padding: EdgeInsets.zero,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // ── Stack: Blue header + overlapping Stat Grid card ──
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              DashboardHeaderCard(
-                userName: activeEmp.name,
-                designation: role.name,
-              ),
-              Positioned(
-                top: 140,
-                left: 0,
-                right: 0,
-                child: const DashboardStatGrid(),
-              ),
-            ],
-          ),
-          const SizedBox(height: 110),
-
-          DashboardPunchCard(
-            onNavigateTab: (index) => setState(() => _bottomIndex = index),
-          ),
-          const SizedBox(height: 20),
-          const DashboardActiveSessionCard(),
-          const SizedBox(height: 20),
-          const DashboardWorkHoursCard(),
-          const SizedBox(height: 20),
-          const DashboardDailyTasksCard(),
-          const SizedBox(height: 20),
-          const DashboardLogTimelineCard(),
-          const SizedBox(height: 30),
-        ],
+      child: ResponsiveCenteredView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                DashboardHeaderCard(
+                  userName: activeEmp.name,
+                  designation: role.name,
+                ),
+                Positioned(
+                  top: 140.h,
+                  left: 0,
+                  right: 0,
+                  child: const DashboardStatGrid(),
+                ),
+              ],
+            ),
+            SizedBox(height: 110.h),
+            DashboardPunchCard(
+              onNavigateTab: (index) => setState(() => _bottomIndex = index),
+            ),
+            SizedBox(height: 20.h),
+            const DashboardActiveSessionCard(),
+            SizedBox(height: 20.h),
+            const DashboardWorkHoursCard(),
+            SizedBox(height: 20.h),
+            const DashboardDailyTasksCard(),
+            SizedBox(height: 20.h),
+            const DashboardLogTimelineCard(),
+            SizedBox(height: 30.h),
+          ],
+        ),
       ),
     );
   }
@@ -88,20 +90,20 @@ class _DashboardPageState extends State<DashboardPage> {
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _bottomIndex = index),
       child: SizedBox(
-        width: 72,
+        width: 72.w,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               isActive ? activeIcon : inactiveIcon,
               color: isActive ? activeColor : Colors.grey.shade400,
-              size: 24,
+              size: 24.sp,
             ),
-            const SizedBox(height: 3),
+            SizedBox(height: 3.h),
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 11.sp,
                 color: isActive ? activeColor : Colors.grey.shade400,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w400,
               ),
@@ -159,7 +161,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   context: context,
                   builder: (context) => AlertDialog(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                     ),
                     title: const Row(
                       children: [
@@ -190,7 +192,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.blue600,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r),
                           ),
                         ),
                         onPressed: () => Navigator.of(context).pop(true),
@@ -223,8 +225,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
                 // ── Center FAB (notched circular button) ──────────────────
                 floatingActionButton: Container(
-                  width: 58,
-                  height: 58,
+                  width: 58.w,
+                  height: 58.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.blue600,
@@ -250,12 +252,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 // ── Custom Notched Bottom Nav Bar ─────────────────────────
                 bottomNavigationBar: BottomAppBar(
                   shape: const CircularNotchedRectangle(),
-                  notchMargin: 8,
+                  notchMargin: 8.r,
                   color: Colors.white,
                   elevation: 12,
                   padding: EdgeInsets.zero,
                   child: SizedBox(
-                    height: 60,
+                    height: 60.h,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -275,7 +277,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           activeColor: navActiveColor,
                         ),
                         // Space for FAB
-                        const SizedBox(width: 58),
+                        SizedBox(width: 58.w),
                         // Right side
                         _buildNavItem(
                           index: 2,

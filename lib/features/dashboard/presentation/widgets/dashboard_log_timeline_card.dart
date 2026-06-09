@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 
 class DashboardLogTimelineCard extends StatelessWidget {
@@ -7,15 +8,15 @@ class DashboardLogTimelineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
         ),
         color: AppColors.surface,
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -32,15 +33,15 @@ class DashboardLogTimelineCard extends StatelessWidget {
                   ),
                   TextButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.tune_rounded, size: 16),
-                    label: const Text('Filter & Short', style: TextStyle(fontSize: 11)),
+                    icon: Icon(Icons.tune_rounded, size: 16.sp),
+                    label: Text('Filter & Short', style: TextStyle(fontSize: 11.sp)),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.primary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               // Simple timeline table header
               const Row(
                 children: [
@@ -87,7 +88,7 @@ class DashboardLogTimelineCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const Divider(height: 16),
+              Divider(height: 16.h),
               // Timeline Row items
               _buildTimelineRow('01/04/2026', '10:12 PM', '07:12 PM', 'Regular', AppColors.success),
               _buildTimelineRow('02/04/2026', '11:42 PM', '08:20 PM', 'Late', AppColors.gray400),
@@ -107,7 +108,7 @@ class DashboardLogTimelineCard extends StatelessWidget {
     Color badgeColor,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
         children: [
           Expanded(
@@ -139,9 +140,9 @@ class DashboardLogTimelineCard extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: badgeColor.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(6.r),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 child: Text(
                   status,
                   style: TextStyle(

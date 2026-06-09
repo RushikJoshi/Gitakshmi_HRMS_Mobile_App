@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_face_liveness/flutter_face_liveness.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public entry-point
@@ -36,16 +38,18 @@ class AttendancePage extends StatelessWidget {
         elevation: 0,
       ),
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.fingerprint, size: 72, color: AppColors.blue500),
-            const SizedBox(height: 20),
-            const Text(
-              'Use Punch In from Dashboard',
-              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
-            ),
-          ],
+        child: ResponsiveCenteredView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.fingerprint, size: 72.w, color: AppColors.blue500),
+              SizedBox(height: 20.h),
+              Text(
+                'Use Punch In from Dashboard',
+                style: TextStyle(fontSize: 16.sp, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -290,15 +294,15 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
   // ─── Verifying ──────────────────────────────────────────────────────────
   Widget _buildVerifying() {
     return SizedBox(
-      height: 370,
+      height: 370.h,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _dragHandle(),
           const Spacer(),
           Container(
-            width: 88,
-            height: 88,
+            width: 88.w,
+            height: 88.w,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF3F81FF), Color(0xFF2667E0)],
@@ -314,24 +318,24 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                 ),
               ],
             ),
-            child: const Icon(Icons.gps_fixed, color: Colors.white, size: 40),
+            child: Icon(Icons.gps_fixed, color: Colors.white, size: 40.sp),
           ),
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: 24.h),
+          Text(
             'Verifying Location',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 10),
-          const Text(
+          SizedBox(height: 10.h),
+          Text(
             'Fetching your real-time GPS location…',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
           ),
-          const SizedBox(height: 28),
+          SizedBox(height: 28.h),
           const SizedBox(
             width: 36,
             height: 36,
@@ -356,7 +360,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
           _dragHandle(),
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Row(
               children: [
                 Column(
@@ -370,7 +374,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                         color: Color(0xFF0FBE7C),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       '${_distanceMeters.toStringAsFixed(1)} m from office',
                       style: const TextStyle(
@@ -390,7 +394,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
           ),
           // Time + Accuracy
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Row(
               children: [
                 const Icon(
@@ -398,7 +402,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                   size: 13,
                   color: AppColors.textSecondary,
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: 4.w),
                 Text(
                   _formatDT(_locationTime ?? DateTime.now()),
                   style: const TextStyle(
@@ -418,29 +422,29 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: _locationCard(),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: const Color(0xFFECFDF5),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(color: const Color(0xFF6EE7B7)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(
                     Icons.check_circle_rounded,
                     color: Color(0xFF0FBE7C),
-                    size: 20,
+                    size: 20.sp,
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
                       'You are within office premises!',
@@ -457,9 +461,9 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
           ),
           const Spacer(),
           _autoCloseRow(),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+            padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
             child: _gradientBtn(
               label: 'Proceed to Face Scan',
               onTap: _goToFaceScanner,
@@ -498,7 +502,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                   children: [
                     SizedBox(
                       width: double.infinity,
-                      height: 200,
+                      height: 200.h,
                       child: Image.asset(
                         'assets/images/ufo_abduction.png',
                         fit: BoxFit.cover,
@@ -510,7 +514,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                       left: 0,
                       right: 0,
                       child: Container(
-                        height: 70,
+                        height: 70.h,
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
@@ -527,7 +531,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                       child: GestureDetector(
                         onTap: () => Navigator.pop(context),
                         child: Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: EdgeInsets.all(6.w),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.4),
                             shape: BoxShape.circle,
@@ -545,7 +549,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
 
                 // ── Content ──────────────────────────────────────────────
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -560,7 +564,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         _locationError
                             ? 'Unable to fetch location'
@@ -570,7 +574,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                           color: AppColors.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
 
                       // Time + Accuracy
                       Row(
@@ -599,7 +603,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                           _gpsBadge(_gpsAccuracy),
                         ],
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14.h),
 
                       // Current Location label
                       const Text(
@@ -610,9 +614,9 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       _locationCard(),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
 
                       // ── Day Type ────────────────────────────────────────
                       const Text(
@@ -623,7 +627,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       DropdownButtonFormField<String>(
                         value: _selectedDayType,
                         decoration: _inputDeco('Select'),
@@ -640,7 +644,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                             v == null ? 'Please select a day type' : null,
                         onChanged: (v) => setState(() => _selectedDayType = v),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
 
                       // ── Out of range reason ─────────────────────────────
                       const Text(
@@ -659,11 +663,11 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                             (v == null || v.trim().isEmpty) ? 'Required' : null,
                         decoration: _inputDeco('Write here'),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
 
                       // Auto-close countdown
                       _autoCloseRow(),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14.h),
 
                       // Prev / Next
                       Row(
@@ -680,7 +684,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                                   width: 1.5,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(12.r),
                                 ),
                               ),
                               child: const Text(
@@ -692,7 +696,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 14),
+                          SizedBox(width: 14.w),
                           Expanded(
                             child: _gradientBtn(
                               label: 'Next',
@@ -709,7 +713,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 32),
+                      SizedBox(height: 32.h),
                     ],
                   ),
                 ),
@@ -726,12 +730,12 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
   // ─────────────────────────────────────────────────────────────────────────
   Widget _dragHandle() => Center(
     child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      width: 40,
-      height: 4,
+      margin: EdgeInsets.symmetric(vertical: 10.h),
+      width: 40.w,
+      height: 4.h,
       decoration: BoxDecoration(
         color: AppColors.gray200,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
     ),
   );
@@ -758,16 +762,16 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
         ? const Color(0xFFF59E0B)
         : const Color(0xFFEF4444);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 11.sp,
           color: color,
           fontWeight: FontWeight.bold,
         ),
@@ -777,20 +781,20 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
 
   Widget _locationCard() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF0F0),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: const Color(0xFFFFCDD2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 2),
-            child: Icon(Icons.location_on, color: Color(0xFFEF5350), size: 20),
+          Padding(
+            padding: EdgeInsets.only(top: 2.h),
+            child: const Icon(Icons.location_on, color: Color(0xFFEF5350), size: 20),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -809,7 +813,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (_locationCoordinates.isNotEmpty && !_locationError) ...[
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     _locationCoordinates,
                     style: const TextStyle(
@@ -825,32 +829,32 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
             ),
           ),
           if (_step != _Step.inRange) ...[
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             GestureDetector(
               onTap: () async {
                 await _openMap();
               },
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
                 child: _lastLat != null && _lastLng != null
                     ? Image.network(
                         'https://staticmap.openstreetmap.de/staticmap.php?center=${_lastLat},${_lastLng}&zoom=15&size=120x120&markers=${_lastLat},${_lastLng},red-pushpin',
-                        width: 40,
-                        height: 40,
+                        width: 40.w,
+                        height: 40.w,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.asset(
                             'assets/images/mock_map_thumbnail.png',
-                            width: 40,
-                            height: 40,
+                            width: 40.w,
+                            height: 40.w,
                             fit: BoxFit.cover,
                           );
                         },
                       )
                     : Image.asset(
                         'assets/images/mock_map_thumbnail.png',
-                        width: 40,
-                        height: 40,
+                        width: 40.w,
+                        height: 40.w,
                         fit: BoxFit.cover,
                       ),
               ),
@@ -863,25 +867,25 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
 
   InputDecoration _inputDeco(String hint) => InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 13),
+    hintStyle: TextStyle(color: AppColors.textLight, fontSize: 13.sp),
     prefixIcon: const Icon(Icons.edit_note_rounded, color: AppColors.textLight),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
     filled: true,
     fillColor: AppColors.surfacePrimary,
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       borderSide: const BorderSide(color: AppColors.textfieldBorder),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       borderSide: const BorderSide(color: AppColors.textfieldBorder),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       borderSide: const BorderSide(color: AppColors.blue500, width: 1.5),
     ),
     errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       borderSide: const BorderSide(color: AppColors.error),
     ),
   );
@@ -921,25 +925,25 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.symmetric(vertical: 16.h),
         decoration: BoxDecoration(
           gradient: LinearGradient(colors: colors),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
             BoxShadow(
               color: colors.last.withValues(alpha: 0.3),
-              blurRadius: 14,
-              offset: const Offset(0, 5),
+              blurRadius: 14.r,
+              offset: Offset(0, 5.h),
             ),
           ],
         ),
         child: Center(
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 15,
+              fontSize: 15.sp,
               letterSpacing: 0.3,
             ),
           ),
@@ -1014,28 +1018,28 @@ class FaceScannerPage extends StatelessWidget {
 
           // ── Tips card at bottom ─────────────────────────────────────────
           Positioned(
-            bottom: MediaQuery.of(context).padding.bottom + 24,
-            left: 16,
-            right: 16,
+            bottom: MediaQuery.of(context).padding.bottom + 24.h,
+            left: 16.w,
+            right: 16.w,
             child: Container(
-              padding: const EdgeInsets.all(14),
+              padding: EdgeInsets.all(14.w),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Row(
+                children: [
+                   Row(
                     children: [
                       Icon(
                         Icons.warning_amber_rounded,
                         color: Color(0xFFFBBF24),
                         size: 15,
                       ),
-                      SizedBox(width: 6),
+                      SizedBox(width: 6.w),
                       Text(
                         'Remove before scanning',
                         style: TextStyle(
@@ -1046,7 +1050,7 @@ class FaceScannerPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   _Tip('Sunglasses'),
                   _Tip('Masks'),
                   _Tip('Cap / Hat'),
@@ -1057,12 +1061,12 @@ class FaceScannerPage extends StatelessWidget {
 
           // ── Back / close button ─────────────────────────────────────────
           Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 12,
+            top: MediaQuery.of(context).padding.top + 8.h,
+            left: 12.w,
             child: GestureDetector(
               onTap: () => Navigator.of(context).pop(false),
               child: Container(
-                padding: const EdgeInsets.all(9),
+                padding: EdgeInsets.all(9.w),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.5),
                   shape: BoxShape.circle,
@@ -1097,22 +1101,22 @@ class _FailedSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24.w),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 4,
-            height: 4,
+            width: 4.w,
+            height: 4.w,
             decoration: BoxDecoration(
               color: AppColors.gray200,
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(4.r),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Container(
-            width: 70,
-            height: 70,
+            width: 70.w,
+            height: 70.w,
             decoration: BoxDecoration(
               color: AppColors.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -1127,7 +1131,7 @@ class _FailedSheet extends StatelessWidget {
               size: 36,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           const Text(
             'Verification Failed',
             style: TextStyle(
@@ -1136,7 +1140,7 @@ class _FailedSheet extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             reason.isNotEmpty
                 ? reason
@@ -1148,17 +1152,17 @@ class _FailedSheet extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
                   onPressed: onCancel,
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                     side: const BorderSide(color: AppColors.gray400),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
                   child: const Text(
@@ -1167,17 +1171,17 @@ class _FailedSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              SizedBox(width: 14.w),
               Expanded(
                 child: GestureDetector(
                   onTap: onRetry,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [AppColors.blue500, AppColors.blue600],
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: const Center(
                       child: Text(
@@ -1194,7 +1198,7 @@ class _FailedSheet extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 8.h),
         ],
       ),
     );
@@ -1210,7 +1214,7 @@ class _Tip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 3),
+      padding: EdgeInsets.only(top: 3.h),
       child: Row(
         children: [
           const Text(

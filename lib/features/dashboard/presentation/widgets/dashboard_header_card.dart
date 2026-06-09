@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 
 class DashboardHeaderCard extends StatelessWidget {
@@ -19,7 +20,7 @@ class DashboardHeaderCard extends StatelessWidget {
       children: [
         // Curved blue header background with rich gradient
         Container(
-          height: 250,
+          height: 250.h,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -29,9 +30,9 @@ class DashboardHeaderCard extends StatelessWidget {
                 AppColors.blue600,
               ],
             ),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20.r),
+              bottomRight: Radius.circular(20.r),
             ),
           ),
         ),
@@ -39,7 +40,7 @@ class DashboardHeaderCard extends StatelessWidget {
         SafeArea(
           bottom: false,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0,),
+            padding: EdgeInsets.symmetric(horizontal: 10.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
@@ -52,18 +53,18 @@ class DashboardHeaderCard extends StatelessWidget {
                       children: [
 
                         Container(
-                          width: 52,
-                          height: 52,
+                          width: 52.w,
+                          height: 52.w,
                           decoration: BoxDecoration(
                             color: AppColors.baseWhite,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                           child: Image.asset(
                             'assets/images/g.png',
                             fit: BoxFit.contain,
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        SizedBox(width: 14.w),
                         // Username and Designation
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,8 +93,8 @@ class DashboardHeaderCard extends StatelessWidget {
                     ),
                     // Flying clock illustration
                     SizedBox(
-                      width: 90,
-                      height: 90,
+                      width: 90.w,
+                      height: 90.w,
                       child: Image.asset(
                         'assets/images/clock.png',
                         fit: BoxFit.contain,

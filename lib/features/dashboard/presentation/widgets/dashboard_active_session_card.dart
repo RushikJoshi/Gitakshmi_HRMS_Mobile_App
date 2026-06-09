@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 
 class DashboardActiveSessionCard extends StatelessWidget {
@@ -7,15 +8,15 @@ class DashboardActiveSessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
         ),
         color: AppColors.surface,
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -27,7 +28,7 @@ class DashboardActiveSessionCard extends StatelessWidget {
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               Row(
                 children: [
                   // Circular Progress Ring
@@ -35,8 +36,8 @@ class DashboardActiveSessionCard extends StatelessWidget {
                     alignment: Alignment.center,
                     children: [
                       SizedBox(
-                        width: 120,
-                        height: 120,
+                        width: 120.w,
+                        height: 120.w,
                         child: CustomPaint(
                           painter: ActiveSessionProgressPainter(progress: 0.65),
                         ),
@@ -56,7 +57,7 @@ class DashboardActiveSessionCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(width: 24),
+                  SizedBox(width: 24.w),
                   // Text descriptions & Badges
                   Expanded(
                     child: Column(
@@ -70,7 +71,7 @@ class DashboardActiveSessionCard extends StatelessWidget {
                             height: 1.3,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         const Text(
                           'Minimum working\n8 Hours',
                           style: TextStyle(
@@ -79,13 +80,13 @@ class DashboardActiveSessionCard extends StatelessWidget {
                             height: 1.3,
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14.h),
                         Container(
                           decoration: BoxDecoration(
                             border: Border.all(color: AppColors.primary),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                           child: const Text(
                             'On Break',
                             style: TextStyle(
@@ -123,13 +124,13 @@ class ActiveSessionProgressPainter extends CustomPainter {
     final paintTrack = Paint()
       ..color = AppColors.purple100
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 14
+      ..strokeWidth = 14.w
       ..strokeCap = StrokeCap.round;
 
     final paintProgress = Paint()
       ..color = AppColors.purple600
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 14
+      ..strokeWidth = 14.w
       ..strokeCap = StrokeCap.round;
 
     // 3/4 Circular ring with opening at the bottom

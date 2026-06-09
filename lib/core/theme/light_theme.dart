@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 ThemeData get lightTheme {
   return ThemeData(
@@ -29,7 +30,7 @@ ThemeData get lightTheme {
       elevation: 2,
       shadowColor: Colors.black.withOpacity(0.05),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -38,9 +39,9 @@ ThemeData get lightTheme {
         foregroundColor: Colors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+        padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 24.w),
       ),
     ),
   );

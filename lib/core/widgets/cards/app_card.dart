@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -38,9 +39,9 @@ class AppCard extends StatelessWidget {
                 width: borderHighlightWidth,
                 decoration: BoxDecoration(
                   color: borderHighlightColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8.r),
+                    bottomLeft: Radius.circular(8.r),
                   ),
                 ),
               ),
@@ -51,9 +52,9 @@ class AppCard extends StatelessWidget {
                 width: borderHighlightWidth,
                 decoration: BoxDecoration(
                   color: borderHighlightColor,
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(8),
-                    bottomRight: Radius.circular(8),
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(8.r),
+                    bottomRight: Radius.circular(8.r),
                   ),
                 ),
               ),
@@ -63,7 +64,7 @@ class AppCard extends StatelessWidget {
       );
       // Remove padding from outer card container to prevent clipping or gap in the highlight stripe
       cardContent = ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         child: cardContent,
       );
     }
@@ -73,7 +74,7 @@ class AppCard extends StatelessWidget {
       margin: margin,
       color: backgroundColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: borderHighlightColor != null ? cardContent : cardContent,
     );

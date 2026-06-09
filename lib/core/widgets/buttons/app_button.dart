@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 
 enum AppButtonType { primary, secondary, outlined, text }
@@ -101,8 +102,8 @@ class AppButton extends StatelessWidget {
 
     Widget content = isLoading
         ? SizedBox(
-            height: 20,
-            width: 20,
+            height: 20.w,
+            width: 20.w,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(effectiveTextColor),
@@ -113,13 +114,13 @@ class AppButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 18, color: effectiveTextColor),
-                const SizedBox(width: 8),
+                Icon(icon, size: 18.sp, color: effectiveTextColor),
+                SizedBox(width: 8.w),
               ],
               Text(
                 text,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   color: effectiveTextColor,
                 ),
@@ -140,7 +141,7 @@ class AppButton extends StatelessWidget {
                       : effectiveTextColor,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(borderRadius),
+                  borderRadius: BorderRadius.circular(borderRadius.r),
                 ),
               ),
               child: content,
@@ -150,7 +151,7 @@ class AppButton extends StatelessWidget {
                   onPressed: isDisabled ? null : onPressed,
                   style: TextButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(borderRadius),
+                      borderRadius: BorderRadius.circular(borderRadius.r),
                     ),
                   ),
                   child: content,
@@ -163,7 +164,7 @@ class AppButton extends StatelessWidget {
                         : effectiveBgColor,
                     elevation: type == AppButtonType.primary && !isDisabled ? 2 : 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(borderRadius),
+                      borderRadius: BorderRadius.circular(borderRadius.r),
                     ),
                   ),
                   child: content,

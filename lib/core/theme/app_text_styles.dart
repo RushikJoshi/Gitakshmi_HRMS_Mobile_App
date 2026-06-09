@@ -1,36 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppTextStyles {
-  static const TextStyle h1 = TextStyle(
-    fontSize: 26,
-    fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary,
-    letterSpacing: -0.5,
-  );
-  
-  static const TextStyle h2 = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary,
-    letterSpacing: -0.2,
-  );
+  static TextStyle get h1 => TextStyle(
+        fontSize: 26.sp,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+        letterSpacing: -0.5,
+      );
 
-  static const TextStyle h3 = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-  );
+  static TextStyle get h2 => TextStyle(
+        fontSize: 20.sp,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+        letterSpacing: -0.2,
+      );
 
-  static const TextStyle body = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: AppColors.textSecondary,
-  );
+  static TextStyle get h3 => TextStyle(
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
+      );
 
-  static const TextStyle caption = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textLight,
-  );
+  static TextStyle get body => TextStyle(
+        fontSize: 14.sp,
+        fontWeight: FontWeight.normal,
+        color: AppColors.textSecondary,
+      );
+
+  static TextStyle get caption => TextStyle(
+        fontSize: 12.sp,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textLight,
+      );
 }

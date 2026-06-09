@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 
 class DashboardStatGrid extends StatelessWidget {
   const DashboardStatGrid({super.key});
@@ -7,27 +9,38 @@ class DashboardStatGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.baseWhite,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
               color: AppColors.baseBlack.withOpacity(0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
+              blurRadius: 16.r,
+              offset: Offset(0, 8.h),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(15.0),
+        padding: EdgeInsets.all(15.w),
         child: GridView.count(
           shrinkWrap: true,
           padding: EdgeInsets.zero,
-          crossAxisCount: 2,
-          childAspectRatio: 1.8,
-          crossAxisSpacing: 14,
-          mainAxisSpacing: 14,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: ResponsiveHelper.responsiveGridCount(
+            context,
+            mobile: 2,
+            tablet: 2,
+            desktop: 4,
+          ),
+          childAspectRatio: ResponsiveHelper.adaptiveValue<double>(
+            context,
+            mobile: 1.8,
+            tablet: 1.8,
+            desktop: 2.2,
+          ),
+          crossAxisSpacing: 14.w,
+          mainAxisSpacing: 14.h,
           children: [
             _buildStatCard(
               icon: Icons.access_time_rounded,
@@ -63,10 +76,10 @@ class DashboardStatGrid extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB), // Off-white/gray50 background inside the main card
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.gray200, width: 1.0),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: AppColors.gray200, width: 1.w),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -82,15 +95,15 @@ class DashboardStatGrid extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: AppColors.gray500,
-                  size: 16,
+                  size: 16.sp,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontSize: 12.sp,
                     color: AppColors.gray600,
                     fontWeight: FontWeight.w600,
                   ),
@@ -100,13 +113,13 @@ class DashboardStatGrid extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Padding(
-            padding: const EdgeInsets.only(left: 4.0),
+            padding: EdgeInsets.only(left: 4.w),
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 18,
+              style: TextStyle(
+                fontSize: 18.sp,
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),

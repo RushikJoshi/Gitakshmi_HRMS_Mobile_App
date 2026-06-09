@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/features/attendance/presentation/pages/attendance_page.dart';
 import 'package:gitakshmi_hrms_app/features/timesheet/presentation/pages/timecard_page.dart';
@@ -15,15 +16,15 @@ class DashboardPunchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
         ),
         color: AppColors.surface,
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.w),
           child: Column(
             children: [
               // ── Header ──────────────────────────────────────────
@@ -41,13 +42,13 @@ class DashboardPunchCard extends StatelessWidget {
                   // QR Scan icon from assets/icons/scan.png
                   Image.asset(
                     'assets/icons/scan.png',
-                    width: 22,
-                    height: 22,
+                    width: 22.w,
+                    height: 22.w,
                     color: AppColors.primary,
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
 
               // ── Pie Chart Row + Buttons ──────────────────────────
               Row(
@@ -55,8 +56,8 @@ class DashboardPunchCard extends StatelessWidget {
                 children: [
                   // Full-circle pie chart with labels inside segments
                   SizedBox(
-                    width: 140,
-                    height: 140,
+                    width: 140.w,
+                    height: 140.w,
                     child: CustomPaint(
                       painter: PieChartPainter(
                         workingPercent: 50,
@@ -64,7 +65,7 @@ class DashboardPunchCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
 
                   // Buttons
                   Expanded(
@@ -80,7 +81,7 @@ class DashboardPunchCard extends StatelessWidget {
                           ),
                           onTap: () => showPunchInSheet(context),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12.h),
                         // My Time-card button
                         _buildActionButton(
                           context: context,
@@ -100,19 +101,19 @@ class DashboardPunchCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
 
               // ── Legend ───────────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildLegendDot(const Color(0xFF3CC5FD), 'Working time'),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   _buildLegendDot(const Color(0xFFF4817A), 'Break time'),
                 ],
               ),
 
-              const Divider(height: 30),
+              Divider(height: 30.h),
 
               // ── Bottom Timeline Row ──────────────────────────────
               Row(
@@ -153,13 +154,13 @@ class DashboardPunchCard extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(14.r),
       child: Container(
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 14),
+        padding: EdgeInsets.symmetric(vertical: 13.h, horizontal: 14.w),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -175,13 +176,13 @@ class DashboardPunchCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Transform.scale(
               scaleX: flipIcon ? -1 : 1,
               child: Image.asset(
                 iconPath,
-                width: 22,
-                height: 22,
+                width: 22.w,
+                height: 22.w,
                 fit: BoxFit.contain,
                 color: AppColors.baseWhite,
               ),
@@ -197,11 +198,11 @@ class DashboardPunchCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 8,
-          height: 8,
+          width: 8.w,
+          height: 8.w,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6.w),
         Text(
           label,
           style: const TextStyle(
@@ -223,10 +224,10 @@ class DashboardPunchCard extends StatelessWidget {
       children: [
         Image.asset(
           iconPath,
-          width: 40,
-          height: 40,
+          width: 40.w,
+          height: 40.w,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           time,
           style: const TextStyle(
@@ -235,7 +236,7 @@ class DashboardPunchCard extends StatelessWidget {
             color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 2),
+        SizedBox(height: 2.h),
         Text(
           label,
           style: const TextStyle(

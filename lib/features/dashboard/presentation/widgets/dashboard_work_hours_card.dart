@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/widgets/bottomsheet/app_selection_bottom_sheet.dart';
 
@@ -30,15 +31,15 @@ class _DashboardWorkHoursCardState extends State<DashboardWorkHoursCard> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
         ),
         color: AppColors.surface,
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.w),
           child: Column(
             children: [
               Row(
@@ -55,7 +56,7 @@ class _DashboardWorkHoursCardState extends State<DashboardWorkHoursCard> {
                   Row(
                     children: [
                       _buildLegendDot(AppColors.purple600, 'Hours'),
-                      const SizedBox(width: 14),
+                      SizedBox(width: 14.w),
                       GestureDetector(
                         onTap: _selectFilter,
                         behavior: HitTestBehavior.opaque,
@@ -70,7 +71,7 @@ class _DashboardWorkHoursCardState extends State<DashboardWorkHoursCard> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4.w),
                             const Icon(
                               Icons.keyboard_arrow_down,
                               size: 16,
@@ -83,10 +84,10 @@ class _DashboardWorkHoursCardState extends State<DashboardWorkHoursCard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               // Custom painted weekly bar chart representation
               SizedBox(
-                height: 130,
+                height: 130.h,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -113,14 +114,14 @@ class _DashboardWorkHoursCardState extends State<DashboardWorkHoursCard> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 8,
-          height: 8,
+          width: 8.w,
+          height: 8.w,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6.w),
         Text(
           label,
           style: const TextStyle(
@@ -138,14 +139,14 @@ class _DashboardWorkHoursCardState extends State<DashboardWorkHoursCard> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Container(
-          width: 14,
-          height: 90 * percent,
+          width: 14.w,
+          height: 90.h * percent,
           decoration: BoxDecoration(
             color: AppColors.purple600,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10.r),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           day,
           style: const TextStyle(

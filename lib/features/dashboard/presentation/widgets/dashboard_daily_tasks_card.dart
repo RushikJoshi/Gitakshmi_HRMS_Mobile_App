@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 
 class DashboardDailyTasksCard extends StatelessWidget {
@@ -7,15 +8,15 @@ class DashboardDailyTasksCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
       child: Card(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
         ),
         color: AppColors.surface,
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -32,21 +33,21 @@ class DashboardDailyTasksCard extends StatelessWidget {
                   ),
                   TextButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.filter_list_rounded, size: 16),
-                    label: const Text('Filter', style: TextStyle(fontSize: 11)),
+                    icon: Icon(Icons.filter_list_rounded, size: 16.sp),
+                    label: Text('Filter', style: TextStyle(fontSize: 11.sp)),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.primary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               _buildTaskGroupHeader('27 April 2026'),
               _buildTaskItem('New Project POC', 'Completed', AppColors.success),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               _buildTaskGroupHeader('28 April 2026'),
               _buildTaskItem('New Project POC', 'Pending', AppColors.error500),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -57,11 +58,11 @@ class DashboardDailyTasksCard extends StatelessWidget {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_rounded, size: 14),
+                        icon: Icon(Icons.arrow_back_ios_rounded, size: 14.sp),
                         onPressed: () {},
                       ),
                       IconButton(
-                        icon: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                        icon: Icon(Icons.arrow_forward_ios_rounded, size: 14.sp),
                         onPressed: () {},
                       ),
                     ],
@@ -79,7 +80,7 @@ class DashboardDailyTasksCard extends StatelessWidget {
     return Row(
       children: [
         Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.primary),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Text(
           date,
           style: const TextStyle(
@@ -94,13 +95,13 @@ class DashboardDailyTasksCard extends StatelessWidget {
 
   Widget _buildTaskItem(String taskName, String status, Color statusColor) {
     return Container(
-      margin: const EdgeInsets.only(top: 8),
+      margin: EdgeInsets.only(top: 8.h),
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: AppColors.gray200),
       ),
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -115,7 +116,7 @@ class DashboardDailyTasksCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2.h),
               Text(
                 taskName,
                 style: const TextStyle(
@@ -137,13 +138,13 @@ class DashboardDailyTasksCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Container(
                 decoration: BoxDecoration(
                   color: statusColor.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(6.r),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 child: Text(
                   status,
                   style: TextStyle(
