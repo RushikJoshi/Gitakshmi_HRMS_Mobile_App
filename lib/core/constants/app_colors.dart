@@ -61,6 +61,10 @@ class AppColors {
   static const Color button_grad_2 = Color(0xFF7544FC);
   static const Color button_grad_3 = Color(0xFF5B2ED4);
   static const Color border = Color(0xFF7A5AF8);
+  static const Color primaryPurple = Color(0xFF7A5AF8);
+  static const Color textDarkGray = Color(0xFF344054);
+  static const Color borderLight = Color(0xFFD0D5DD);
+  static const Color dividerLight = Color(0xFFF2F4F7);
 
   // Custom Gradients
   static const Gradient primaryGradient = LinearGradient(

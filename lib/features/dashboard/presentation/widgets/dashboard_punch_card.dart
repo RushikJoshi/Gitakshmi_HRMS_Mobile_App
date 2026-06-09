@@ -3,15 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/features/attendance/presentation/pages/attendance_page.dart';
-import 'package:gitakshmi_hrms_app/features/timesheet/presentation/pages/timecard_page.dart';
+import 'package:gitakshmi_hrms_app/features/timesheet/presentation/pages/timesheet_page.dart';
 
 class DashboardPunchCard extends StatelessWidget {
   final Function(int) onNavigateTab;
 
-  const DashboardPunchCard({
-    super.key,
-    required this.onNavigateTab,
-  });
+  const DashboardPunchCard({super.key, required this.onNavigateTab});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +89,7 @@ class DashboardPunchCard extends StatelessWidget {
                           ),
                           onTap: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => TimecardScreen()),
+                            MaterialPageRoute(builder: (_) => const TimeSheetScreen()),
                           ),
                           flipIcon: true,
                         ),
@@ -222,11 +219,7 @@ class DashboardPunchCard extends StatelessWidget {
   }) {
     return Column(
       children: [
-        Image.asset(
-          iconPath,
-          width: 40.w,
-          height: 40.w,
-        ),
+        Image.asset(iconPath, width: 40.w, height: 40.w),
         SizedBox(height: 8.h),
         Text(
           time,
@@ -255,10 +248,7 @@ class PieChartPainter extends CustomPainter {
   final double workingPercent;
   final double breakPercent;
 
-  PieChartPainter({
-    required this.workingPercent,
-    required this.breakPercent,
-  });
+  PieChartPainter({required this.workingPercent, required this.breakPercent});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -292,7 +282,13 @@ class PieChartPainter extends CustomPainter {
     final paintBreak = Paint()
       ..color = salmon
       ..style = PaintingStyle.fill;
-    canvas.drawArc(rect, startAngle + workingSweep, breakSweep, true, paintBreak);
+    canvas.drawArc(
+      rect,
+      startAngle + workingSweep,
+      breakSweep,
+      true,
+      paintBreak,
+    );
 
     // ── Draw labels inside each segment ───────────────
     _drawSegmentLabel(
@@ -370,7 +366,10 @@ class PieChartPainter extends CustomPainter {
     );
     valuePainter.paint(
       canvas,
-      Offset(labelCenter.dx - valuePainter.width / 2, startY + titlePainter.height + 3),
+      Offset(
+        labelCenter.dx - valuePainter.width / 2,
+        startY + titlePainter.height + 3,
+      ),
     );
   }
 

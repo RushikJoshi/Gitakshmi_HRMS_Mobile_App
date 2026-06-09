@@ -33,8 +33,10 @@ class App extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  padding:
-                      EdgeInsets.symmetric(vertical: 14.h, horizontal: 24.w),
+                  padding: EdgeInsets.symmetric(
+                    vertical: 14.h,
+                    horizontal: 24.w,
+                  ),
                 ),
               ),
             );
@@ -49,7 +51,11 @@ class App extends StatelessWidget {
                   breakpoints: const [
                     Breakpoint(start: 0, end: 600, name: MOBILE),
                     Breakpoint(start: 601, end: 1024, name: TABLET),
-                    Breakpoint(start: 1025, end: double.infinity, name: DESKTOP),
+                    Breakpoint(
+                      start: 1025,
+                      end: double.infinity,
+                      name: DESKTOP,
+                    ),
                   ],
                   useShortestSide: true,
                   child: child ?? const SizedBox.shrink(),

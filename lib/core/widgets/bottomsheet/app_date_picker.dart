@@ -151,6 +151,196 @@ class _AppDatePickerState extends State<AppDatePicker> {
     });
   }
 
+  void _showMonthYearPicker(BuildContext context) {
+    int selectedMonthIndex = _currentMonth.month; // 1-indexed
+    int selectedYear = _currentMonth.year;
+    
+    final shortMonths = const [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Select Month & Year',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Color(0xFF101828),
+            ),
+          ),
+          content: StatefulBuilder(
+            builder: (context, setDialogState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Year Selector Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          if (selectedYear > _firstDateLimit.year) {
+                            setDialogState(() {
+                              selectedYear--;
+                            });
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.chevron_left_rounded,
+                          color: Color(0xFF7544FC),
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Text(
+                        '$selectedYear',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF101828),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      IconButton(
+                        onPressed: () {
+                          if (selectedYear < _lastDateLimit.year) {
+                            setDialogState(() {
+                              selectedYear++;
+                            });
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.chevron_right_rounded,
+                          color: Color(0xFF7544FC),
+                          size: 28,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Months Grid
+                  SizedBox(
+                    width: 280,
+                    height: 180,
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: 12,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        childAspectRatio: 1.5,
+                      ),
+                      itemBuilder: (context, index) {
+                        final monthNum = index + 1;
+                        final isSelected = selectedMonthIndex == monthNum;
+                        
+                        return GestureDetector(
+                          onTap: () {
+                            setDialogState(() {
+                              selectedMonthIndex = monthNum;
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFF7544FC) : const Color(0xFFF4F1FF),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFF7544FC) : const Color(0xFFE4E7EC),
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              shortMonths[index],
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                color: isSelected ? Colors.white : const Color(0xFF475467),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actions: [
+            SizedBox(
+              width: 110,
+              height: 40,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF7544FC)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: Color(0xFF7544FC),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 110,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () {
+                  final targetMonth = DateTime(selectedYear, selectedMonthIndex);
+                  if (targetMonth.isAfter(_firstDateLimit) && targetMonth.isBefore(_lastDateLimit) ||
+                      (targetMonth.year == _firstDateLimit.year && targetMonth.month == _firstDateLimit.month) ||
+                      (targetMonth.year == _lastDateLimit.year && targetMonth.month == _lastDateLimit.month)) {
+                    setState(() {
+                      _currentMonth = targetMonth;
+                      if (widget.mode == AppDatePickerMode.single) {
+                        final prevDay = _selectedSingleDate?.day ?? 1;
+                        final lastDayOfNewMonth = DateTime(selectedYear, selectedMonthIndex + 1, 0).day;
+                        final newDay = prevDay > lastDayOfNewMonth ? lastDayOfNewMonth : prevDay;
+                        _selectedSingleDate = DateTime(selectedYear, selectedMonthIndex, newDay);
+                      }
+                    });
+                  }
+                  Navigator.pop(ctx);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7544FC),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'OK',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _handleDayTap(DateTime day) {
     if (day.isBefore(_firstDateLimit) || day.isAfter(_lastDateLimit)) return;
 
@@ -277,12 +467,30 @@ class _AppDatePickerState extends State<AppDatePicker> {
                   ),
                   Expanded(
                     child: Center(
-                      child: Text(
-                        '${_months[_currentMonth.month - 1]} ${_currentMonth.year}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF101828),
+                      child: InkWell(
+                        onTap: () => _showMonthYearPicker(context),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${_months[_currentMonth.month - 1]} ${_currentMonth.year}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF101828),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.arrow_drop_down_rounded,
+                                color: Color(0xFF7544FC),
+                                size: 24,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

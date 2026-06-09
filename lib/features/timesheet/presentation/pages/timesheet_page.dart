@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import '../widgets/timesheet_dialogs.dart';
-import 'timecard_page.dart';
 
 class TimeSheetScreen extends StatefulWidget {
   const TimeSheetScreen({super.key});
@@ -10,6 +10,13 @@ class TimeSheetScreen extends StatefulWidget {
 }
 
 class _TimeSheetScreenState extends State<TimeSheetScreen> {
+  DateTime _selectedMonth = DateTime(2025, 5, 1);
+
+  final List<String> _months = const [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
   static const Color headerPurple = Color(0xff7A5AF8);
   static const Color bgColor = Color(0xFFFEFEFE);
   static const Color darkText = Color(0xFF111827);
@@ -59,52 +66,75 @@ class _TimeSheetScreenState extends State<TimeSheetScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Month Selector
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildArrowBtn(Icons.chevron_left),
-                  Row(
-                    children: const [
-                      Text(
-                        "May, 2025",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: darkText,
-                        ),
+        child: ResponsiveCenteredView(
+          maxWidth: 600,
+          child: Column(
+            children: [
+              // Month Selector
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        setState(() {
+                          _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1, 1);
+                        });
+                      },
+                      child: _buildArrowBtn(Icons.chevron_left),
+                    ),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => _showMonthYearPicker(context),
+                      child: Row(
+                        children: [
+                          Text(
+                            '${_months[_selectedMonth.month - 1]}, ${_selectedMonth.year}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: darkText,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down, color: darkText, size: 20),
+                        ],
                       ),
-                      SizedBox(width: 4),
-                      Icon(Icons.keyboard_arrow_down, color: darkText, size: 20),
-                    ],
-                  ),
-                  _buildArrowBtn(Icons.chevron_right),
-                ],
+                    ),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        setState(() {
+                          _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 1);
+                        });
+                      },
+                      child: _buildArrowBtn(Icons.chevron_right),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            
-            // Calendar grid
-            _buildCalendarGrid(),
-            
-            // Legends
-            _buildLegends(),
-            
-            const SizedBox(height: 32),
-            
-            // Working hours
-            _buildWorkingHoursCard(context),
-            
-            const SizedBox(height: 24),
-            
-            // Bottom Fields Grid
-            _buildBottomFields(),
-            
-            const SizedBox(height: 60), // extra spacing
-          ],
+              
+              // Calendar grid
+              _buildCalendarGrid(),
+              
+              // Legends
+              _buildLegends(),
+              
+              const SizedBox(height: 32),
+              
+              // Working hours
+              _buildWorkingHoursCard(context),
+              
+              const SizedBox(height: 24),
+              
+              // Bottom Fields Grid
+              _buildBottomFields(),
+              
+              const SizedBox(height: 60), // extra spacing
+            ],
+          ),
         ),
       ),
     );
@@ -125,8 +155,12 @@ class _TimeSheetScreenState extends State<TimeSheetScreen> {
     // Days of week
     final daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     
-    // Mock days logic for UI purposes
-    // 1st of May 2025 is Thursday. So Mon, Tue, Wed are empty.
+    // Calculate days in the selected month dynamically
+    final daysInMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).day;
+    
+    // Calculate starting weekday (Monday is 0, Sunday is 6)
+    final startingWeekday = (DateTime(_selectedMonth.year, _selectedMonth.month, 1).weekday - 1) % 7;
+    
     List<Widget> gridItems = [];
     
     for (String d in daysOfWeek) {
@@ -140,13 +174,13 @@ class _TimeSheetScreenState extends State<TimeSheetScreen> {
       );
     }
     
-    // Empty spots for 1st row (Mon, Tue, Wed)
-    for (int i = 0; i < 3; i++) {
+    // Empty spots for 1st row
+    for (int i = 0; i < startingWeekday; i++) {
       gridItems.add(const SizedBox());
     }
     
-    // Days 1 to 31
-    for (int i = 1; i <= 31; i++) {
+    // Days 1 to daysInMonth
+    for (int i = 1; i <= daysInMonth; i++) {
       Color bgColor = defaultDayColor;
       Color textColor = darkText;
       
@@ -174,8 +208,10 @@ class _TimeSheetScreenState extends State<TimeSheetScreen> {
       gridItems.add(
         GestureDetector(
           onTap: () {
-            if (bgColor == punchinMissingColor || bgColor == punchoutMissingColor) {
-              showRaiseRequestOptionsDialog(context);
+            if (bgColor == punchinMissingColor) {
+              showRaiseRequestOptionsDialog(context, isPunchIn: true);
+            } else if (bgColor == punchoutMissingColor) {
+              showRaiseRequestOptionsDialog(context, isPunchIn: false);
             }
           },
           child: Container(
@@ -263,18 +299,11 @@ class _TimeSheetScreenState extends State<TimeSheetScreen> {
   Widget _buildWorkingHoursCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const TimecardScreen()),
-          );
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFEAECF0)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFEAECF0)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
@@ -297,7 +326,7 @@ class _TimeSheetScreenState extends State<TimeSheetScreen> {
                 ),
               ),
             ),
-            const Divider(height: 1, thickness: 3,color: Color(0xFFEAECF0)),
+            const Divider(height: 1, thickness: 3, color: Color(0xFFEAECF0)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
@@ -363,7 +392,6 @@ class _TimeSheetScreenState extends State<TimeSheetScreen> {
           ],
         ),
       ),
-      )
     );
   }
 
@@ -371,13 +399,12 @@ class _TimeSheetScreenState extends State<TimeSheetScreen> {
     final fields = [
       {"icon": Icons.exit_to_app, "title": "Working Days", "count": "25"},
       {"icon": Icons.hourglass_empty, "title": "Present Days", "count": "20"},
-      {"icon": Icons.cancel_outlined, "title": "Extra Days", "count": "02"},
+      {"icon": Icons.cancel_outlined, "title": "Absent Days", "count": "05"},
       {"icon": Icons.arrow_circle_right_outlined, "title": "Holiday", "count": "01"},
-      {"icon": Icons.error_outline, "title": "Salaried Day", "count": "01"},
-      {"icon": Icons.event_busy, "title": "Week-off", "count": "01"},
-      {"icon": Icons.event_available, "title": "Paid Leave", "count": "01"},
-      {"icon": Icons.event_busy, "title": "Unpaid Leave", "count": "01"},
-      {"icon": Icons.edit_calendar, "title": "Short Leave", "count": "01"},
+      {"icon": Icons.event_busy, "title": "Week-off", "count": "04"},
+      {"icon": Icons.event_available, "title": "On Leave", "count": "01"},
+      {"icon": Icons.alarm, "title": "Late In", "count": "02"},
+      {"icon": Icons.logout, "title": "Early Out", "count": "01"},
     ];
 
     return Padding(
@@ -440,6 +467,181 @@ class _TimeSheetScreenState extends State<TimeSheetScreen> {
           );
         },
       ),
+    );
+  }
+
+  void _showMonthYearPicker(BuildContext context) {
+    int selectedMonthIndex = _selectedMonth.month; // 1-indexed
+    int selectedYear = _selectedMonth.year;
+    
+    final shortMonths = const [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Select Month & Year',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: darkText,
+            ),
+          ),
+          content: StatefulBuilder(
+            builder: (context, setDialogState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Year Selector Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          setDialogState(() {
+                            selectedYear--;
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.chevron_left_rounded,
+                          color: headerPurple,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Text(
+                        '$selectedYear',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: darkText,
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      IconButton(
+                        onPressed: () {
+                          setDialogState(() {
+                            selectedYear++;
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.chevron_right_rounded,
+                          color: headerPurple,
+                          size: 28,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Months Grid
+                  SizedBox(
+                    width: 280,
+                    height: 180,
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: 12,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        childAspectRatio: 1.5,
+                      ),
+                      itemBuilder: (context, index) {
+                        final monthNum = index + 1;
+                        final isSelected = selectedMonthIndex == monthNum;
+                        
+                        return GestureDetector(
+                          onTap: () {
+                            setDialogState(() {
+                              selectedMonthIndex = monthNum;
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isSelected ? headerPurple : const Color(0xFFF4F1FF),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected ? headerPurple : const Color(0xFFE4E7EC),
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              shortMonths[index],
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                color: isSelected ? Colors.white : const Color(0xFF475467),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
+          actions: [
+            SizedBox(
+              width: 110,
+              height: 40,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: headerPurple),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: headerPurple,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 110,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedMonth = DateTime(selectedYear, selectedMonthIndex, 1);
+                  });
+                  Navigator.pop(ctx);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: headerPurple,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'OK',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -15,64 +15,66 @@ class SplashPage extends StatelessWidget {
         child: ResponsiveCenteredView(
           maxWidth: 560,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12.w),
+            padding: EdgeInsets.symmetric(horizontal: 10.w),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: 25.h),
 
                 Image.asset(
                   'assets/images/logo.png',
-                  height: 79.h,
+                  height: 75.h,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.h),
-                      child: Text(
-                        "Gitakshmi Technologies",
-                        style: TextStyle(
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                      child: Center(
+                        child: Text(
+                          "Gitakshmi Technologies",
+                          style: TextStyle(
+                            fontSize: 24.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
-                          );
+                    );
                   },
                 ),
 
                 SizedBox(height: 30.h),
 
-                Image.asset(
-                  'assets/images/rocket.png',
-                  height: ResponsiveHelper.adaptiveValue<double>(
-                    context,
-                    mobile: 354,
-                    tablet: 420,
-                    desktop: 460,
-                  ).h,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(
-                      Icons.rocket_launch_rounded,
-                      size: 200.sp,
-                      color: AppColors.primary.withValues(alpha: 0.2),
-                    );
-                  },
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.h),
+                      child: Image.asset(
+                        'assets/images/rocket.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.rocket_launch_rounded,
+                            size: 180.sp,
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 ),
 
-                const Spacer(),
-
-                const Spacer(),
+                SizedBox(height: 20.h),
 
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(18.w, 24.h, 18.w, 20.h),
+                  padding: EdgeInsets.fromLTRB(10.w, 32.h, 10.w, 24.h),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [AppColors.gradient1, AppColors.gradient2],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
-                    borderRadius: BorderRadius.circular(14.r),
+                    borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Column(
                     children: [
@@ -81,35 +83,38 @@ class SplashPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 26.sp,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 28.sp,
+                          fontWeight: FontWeight.bold,
                           height: 1.25,
                         ),
                       ),
-                      SizedBox(height: 8.h),
+                      SizedBox(height: 12.h),
                       Text(
                         "Get all your HR related tasks in one place.\nEasy reliable and quick.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w400,
-                          height: 1.3,
+                          height: 1.4,
                         ),
                       ),
-                      SizedBox(height: 58.h),
+                      SizedBox(height: 36.h),
                       SizedBox(
                         width: double.infinity,
-                        height: 40.h,
+                        height: 48.h,
                         child: ElevatedButton(
                           onPressed: () {
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+                              MaterialPageRoute(
+                                builder: (_) => const OnboardingScreen(),
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFF333333),
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30.r),
@@ -118,9 +123,8 @@ class SplashPage extends StatelessWidget {
                           child: Text(
                             "Get Started",
                             style: TextStyle(
-                              fontSize: 10.sp,
-                              color: const Color(0xff333333),
-                              fontWeight: FontWeight.w500,
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -129,7 +133,7 @@ class SplashPage extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: 14.h),
+                SizedBox(height: 20.h),
               ],
             ),
           ),

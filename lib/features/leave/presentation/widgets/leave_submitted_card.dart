@@ -15,7 +15,7 @@ class LeaveSubmittedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (selectedTab == 0) {
       if (reviewLeaves.isEmpty) {
-        return _noLeaveSubmittedCard(context);
+        return _noLeaveSubmittedCard();
       }
       return Column(
         children: reviewLeaves
@@ -59,17 +59,10 @@ class LeaveSubmittedCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(9),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,13 +87,13 @@ class LeaveSubmittedCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: const Color(0xFFFCFCFD),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(color: const Color(0xFFE4E7EC)),
             ),
             child: Row(
@@ -120,7 +113,7 @@ class LeaveSubmittedCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Text(
             "Submitted on: $submittedDateStr",
             style: const TextStyle(fontSize: 10, color: Color(0xFF667085)),
@@ -130,25 +123,14 @@ class LeaveSubmittedCard extends StatelessWidget {
     );
   }
 
-  Widget _noLeaveSubmittedCard(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-    // Calculate the remaining height dynamically to fill the screen viewport
-    final double calculatedMinHeight = (screenHeight - 380).clamp(360.0, 900.0);
-
+  Widget _noLeaveSubmittedCard() {
     return Container(
       width: double.infinity,
-      constraints: BoxConstraints(minHeight: calculatedMinHeight),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      constraints: const BoxConstraints(minHeight: 312),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(9),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,10 +150,10 @@ class LeaveSubmittedCard extends StatelessWidget {
               children: [
                 Image.asset(
                   'assets/images/bag_2.png',
-                  height: 124,
-                  width: 68,
+                  height: 118,
+                  width: 64,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 const Text(
                   "No Leave Submitted!",
                   style: TextStyle(
@@ -180,7 +162,7 @@ class LeaveSubmittedCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 const Text(
                   "Ready to catch some fresh air?\nClick \"+\" and take that well-deserved break!",
                   textAlign: TextAlign.center,
@@ -205,17 +187,10 @@ class LeaveSubmittedCard extends StatelessWidget {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(9),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,13 +216,13 @@ class LeaveSubmittedCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: const Color(0xFFFCFCFD),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(color: const Color(0xFFE4E7EC)),
             ),
             child: Row(
@@ -267,60 +242,48 @@ class LeaveSubmittedCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            runSpacing: 8,
+          const SizedBox(height: 12),
+          Row(
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(statusIcon, color: statusColor, size: 16),
-                  const SizedBox(width: 6),
-                  Text(
-                    statusText,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
+              Icon(statusIcon, color: statusColor, size: 15),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  statusText,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
+                ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "By",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF667085),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  CircleAvatar(
-                    radius: 10,
-                    backgroundColor: statusColor == const Color(0xFF12B76A)
-                        ? const Color(0xFFE6F4EA)
-                        : const Color(0xFFFCE8E6),
-                    child: Icon(
-                      Icons.person,
-                      size: 11,
-                      color: statusColor,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  const Text(
-                    "Elaine",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF101828),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+              const Text(
+                "By",
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF101828),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const CircleAvatar(
+                radius: 10,
+                backgroundColor: Color(0xFFFFE0E0),
+                child: Icon(
+                  Icons.person,
+                  size: 13,
+                  color: Color(0xFFF97066),
+                ),
+              ),
+              const SizedBox(width: 5),
+              const Text(
+                "Elaine",
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF101828),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),

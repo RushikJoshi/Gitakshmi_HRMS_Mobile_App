@@ -1,10 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/login_page.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/signup_page.dart';
 
 // Mapping the user's screen names to the project's page classes
 typedef SignInScreen = LoginPage;
+
+final List<OnboardModel> pages = [
+  OnboardModel(
+    topImage: "assets/images/onbording1_top.png",
+    bottomImage: "assets/images/onbording1_bottom.png",
+    title: "Welcome to HRMS!",
+    subtitle: "Make Smart Decisions! Set clear timelines for projects and celebrate your achievements!",
+    buttonText: "Next",
+    secondButtonText: "Skip",
+    top: ImagePos(top: 86, left: 9, width: 283),
+    bottom: ImagePos(top: 1, left: 79, width: 1),
+  ),
+  OnboardModel(
+    topImage: "assets/images/onboarding2_top.png",
+    bottomImage: "assets/images/onboarding2_bottom.png",
+    title: "Manage Stress Effectively",
+    subtitle: "Stay Balanced! Track your workload and maintain a healthy stress level with ease.",
+    buttonText: "Next",
+    secondButtonText: "Skip",
+    top: ImagePos(top: 60, left: 30, width: 266),
+    bottom: ImagePos(top: 164, left: 40, width: 296),
+  ),
+  OnboardModel(
+    topImage: "assets/images/onboarding3_top.png",
+    bottomImage: "assets/images/onboarding3_bottom.png",
+    title: "Plan for Success",
+    subtitle: "Your Journey Starts Here! Earn achievement badges as you conquer your tasks. Let's get started!",
+    buttonText: "Next",
+    secondButtonText: "Skip",
+    top: ImagePos(top: 65, left: 49, width: 301),
+    bottom: ImagePos(top: 211, left: 49, width: 301),
+  ),
+  OnboardModel(
+    topImage: "assets/images/onboarding_final_top.png",
+    bottomImage: "assets/images/onboarding_final_bottom.png",
+    title: "Navigate Your Work Journey Efficient & Easy",
+    subtitle: "Increase your work management & career development radically",
+    buttonText: "Sign In",
+    secondButtonText: "Sign Up",
+    top: ImagePos(top: 50, left: 38, width: 287),
+    bottom: ImagePos(top: 161, left: 60, width: 299),
+  ),
+];
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -16,49 +60,6 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int currentIndex = 0;
-
-  final List<OnboardModel> pages = [
-    OnboardModel(
-      topImage: "assets/images/onbording1_top.png",
-      bottomImage: "assets/images/onbording1_bottom.png",
-      title: "Welcome to HRMS!",
-      subtitle: "Make Smart Decisions! Set clear timelines for\nprojects and celebrate your achievements!",
-      buttonText: "Next",
-      secondButtonText: "Skip",
-      top: ImagePos(top: 86, left: 9, width: 283),
-      bottom: ImagePos(top: 200, left: 79, width: 280),
-    ),
-    OnboardModel(
-      topImage: "assets/images/onboarding2_top.png",
-      bottomImage: "assets/images/onboarding2_bottom.png",
-      title: "Manage Stress Effectively",
-      subtitle: "Stay Balanced! Track your workload and maintain a\nhealthy stress level with ease.",
-      buttonText: "Next",
-      secondButtonText: "Skip",
-      top: ImagePos(top: 60, left: 30, width: 266),
-      bottom: ImagePos(top: 164, left: 40, width: 296),
-    ),
-    OnboardModel(
-      topImage: "assets/images/onboarding3_top.png",
-      bottomImage: "assets/images/onboarding3_bottom.png",
-      title: "Plan for Success",
-      subtitle: "Your Journey Starts Here! Earn achievement badges\nas you conquer your tasks. Let's get started!",
-      buttonText: "Next",
-      secondButtonText: "Skip",
-      top: ImagePos(top: 65, left: 49, width: 301),
-      bottom: ImagePos(top: 211, left: 49, width: 301),
-    ),
-    OnboardModel(
-      topImage: "assets/images/onboarding_final_top.png",
-      bottomImage: "assets/images/onboarding_final_bottom.png",
-      title: "Navigate Your Work Journey\nEfficient & Easy",
-      subtitle: "Increase your work management & career\ndevelopment radically",
-      buttonText: "Sign In",
-      secondButtonText: "Sign Up",
-      top: ImagePos(top: 50, left: 38, width: 287),
-      bottom: ImagePos(top: 161, left: 60, width: 299),
-    ),
-  ];
 
   void nextPage() {
     if (currentIndex < pages.length - 1) {
@@ -75,42 +76,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
-      body:
-      PageView.builder(
-        controller: _controller,
-        itemCount: pages.length,
-        onPageChanged: (index) => setState(() => currentIndex = index),
-        itemBuilder: (context, index) => _buildPage(pages[index]),
+      body: ResponsiveCenteredView(
+        child: PageView.builder(
+          controller: _controller,
+          itemCount: pages.length,
+          onPageChanged: (index) => setState(() => currentIndex = index),
+          itemBuilder: (context, index) => _buildPage(pages[index]),
+        ),
       ),
     );
   }
 
   Widget _buildPage(OnboardModel page) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-
-    // Dynamically calculate the top container height to adapt to different screen aspect ratios.
-    double topHeight = screenHeight * 0.58;
-    if (screenHeight < 650) {
-      topHeight = screenHeight * 0.44;
-    } else if (screenHeight < 750) {
-      topHeight = screenHeight * 0.52;
-    }
-
-    final double paddingHorizontal = screenHeight < 700 ? 20 : 28;
-    final double titleSize = screenHeight < 700 ? 18 : 20;
-    final double subtitleSize = screenHeight < 700 ? 11 : 12;
-
-    final double spacing1 = screenHeight < 700 ? 8 : 12;
-    final double spacing2 = screenHeight < 700 ? 8 : 12;
-    final double spacing3 = screenHeight < 700 ? 10 : 18;
-    final double spacing4 = screenHeight < 700 ? 10 : 14;
-    final double spacing5 = screenHeight < 700 ? 16 : 32;
-
     return Column(
       children: [
         Container(
-          height: topHeight,
+          height: ResponsiveHelper.screenHeight(context) * .62,
           width: double.infinity,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -122,113 +103,85 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ],
             ),
           ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final double containerWidth = constraints.maxWidth;
-              final double containerHeight = constraints.maxHeight;
-
-              // Reference design dimensions
-              const double refWidth = 375.0;
-              const double refHeight = 471.0;
-
-              final double widthScale = containerWidth / refWidth;
-              final double heightScale = containerHeight / refHeight;
-
-              // Use the minimum scale factor to preserve image aspect ratios
-              final double scale = widthScale < heightScale ? widthScale : heightScale;
-
-              Positioned buildPositionedImage({
-                required String imagePath,
-                required ImagePos pos,
-                required bool isTop,
-              }) {
-                final double? scaledTop = pos.top != null ? pos.top! * heightScale : null;
-                final double? scaledLeft = pos.left != null ? pos.left! * widthScale : null;
-                final double? scaledRight = pos.right != null ? pos.right! * widthScale : null;
-                final double? scaledBottom = pos.bottom != null ? pos.bottom! * heightScale : null;
-                final double scaledWidth = pos.width * scale;
-
-                return Positioned(
-                  top: scaledTop,
-                  left: scaledLeft,
-                  right: scaledRight,
-                  bottom: scaledBottom,
-                  child: Image.asset(
-                    imagePath,
-                    width: scaledWidth,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      if (isTop) {
+          child: Center(
+            child: SizedBox(
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: page.top.top,
+                    left: page.top.left,
+                    right: page.top.right,
+                    bottom: page.top.bottom,
+                    child: Image.asset(
+                      page.topImage,
+                      width: page.top.width,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
                         return Icon(
                           Icons.image_outlined,
-                          size: 80 * scale,
+                          size: 80,
                           color: AppColors.primary.withOpacity(0.3),
                         );
-                      }
-                      return const SizedBox.shrink();
-                    },
+                      },
+                    ),
                   ),
-                );
-              }
-
-              return Stack(
-                children: [
-                  buildPositionedImage(imagePath: page.topImage, pos: page.top, isTop: true),
-                  buildPositionedImage(imagePath: page.bottomImage, pos: page.bottom, isTop: false),
+                  Positioned(
+                    top: page.bottom.top,
+                    left: page.bottom.left,
+                    right: page.bottom.right,
+                    bottom: page.bottom.bottom,
+                    child: Image.asset(
+                      page.bottomImage,
+                      width: page.bottom.width,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
                 ],
-              );
-            },
+              ),
+            ),
           ),
         ),
 
-        ///page title and controls=====================
+    ///page title=====================
         Expanded(
-          child: SafeArea(
-            top: false,
-            bottom: true,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: paddingHorizontal),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(height: spacing1),
-                          Text(
-                            page.title,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: titleSize,
-                              fontWeight: FontWeight.w800,
-                              color: const Color(0xFF101828),
-                              height: 1.2,
-                            ),
-                          ),
-                          SizedBox(height: spacing2),
-                          Text(
-                            page.subtitle,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: subtitleSize,
-                              color: const Color(0xFF344054),
-                              height: 1.4,
-                            ),
-                          ),
-                          SizedBox(height: spacing3),
-                          _indicator(),
-                        ],
-                      ),
-                    ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Text(
+                  page.title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                    height: 1.2,
                   ),
-                  _gradientButton(page.buttonText),
-                  SizedBox(height: spacing4),
-                  _outlineButton(page.secondButtonText),
-                  SizedBox(height: spacing5),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  page.subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+                if (currentIndex != pages.length - 1) ...[
+                  const SizedBox(height: 18),
+                  _indicator(),
                 ],
-              ),
+                const Spacer(),
+                _gradientButton(page.buttonText),
+                const SizedBox(height: 14),
+                _outlineButton(page.secondButtonText),
+                const SizedBox(height: 32),
+              ],
             ),
           ),
         ),
@@ -241,16 +194,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         pages.length,
-            (index) => AnimatedContainer(
+        (index) => AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: currentIndex == index ? 22 : 18,
-          height: 4,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: currentIndex == index ? 24 : 8,
+          height: 5,
           decoration: BoxDecoration(
             color: currentIndex == index
-                ? const Color(0xFF7A5AF8)
-                : const Color(0xFFE4E7EC),
-            borderRadius: BorderRadius.circular(20),
+                ? AppColors.primaryPurple
+                : AppColors.gray200,
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
       ),
@@ -258,24 +211,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _gradientButton(String text) {
-    return Container(
-      height: 50,
+    return SizedBox(
+      height: 48,
       width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        gradient: const LinearGradient(
-          colors: [
-            AppColors.button_grad_1,
-            AppColors.button_grad_2,
-            AppColors.button_grad_3,
-          ],
-        ),
-      ),
       child: ElevatedButton(
         onPressed: nextPage,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
+          backgroundColor: AppColors.primaryPurple,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
@@ -284,7 +227,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           text,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -316,8 +259,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         },
         style: OutlinedButton.styleFrom(
           side: const BorderSide(
-            color: AppColors.border,
-            width: 1.3,
+            color: AppColors.primaryPurple,
+            width: 1.0,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
@@ -326,8 +269,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: Text(
           text,
           style: const TextStyle(
-            color: Color(0xFF7A5AF8),
-            fontSize: 13,
+            color: AppColors.primaryPurple,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),

@@ -25,10 +25,7 @@ class DashboardHeaderCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomCenter,
-              colors: [
-                AppColors.blue500,
-                AppColors.blue600,
-              ],
+              colors: [AppColors.blue500, AppColors.blue600],
             ),
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(20.r),
@@ -51,7 +48,6 @@ class DashboardHeaderCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-
                         Container(
                           width: 52.w,
                           height: 52.w,
@@ -102,7 +98,6 @@ class DashboardHeaderCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
               ],
             ),
           ),

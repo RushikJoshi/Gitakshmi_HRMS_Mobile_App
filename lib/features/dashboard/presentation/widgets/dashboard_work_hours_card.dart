@@ -92,13 +92,34 @@ class _DashboardWorkHoursCardState extends State<DashboardWorkHoursCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _buildWeeklyBar('Mon', _selectedFilter == 'This Week' ? 0.6 : 0.4),
-                    _buildWeeklyBar('Tue', _selectedFilter == 'This Week' ? 0.4 : 0.8),
-                    _buildWeeklyBar('Wed', _selectedFilter == 'This Week' ? 0.6 : 0.5),
-                    _buildWeeklyBar('Thu', _selectedFilter == 'This Week' ? 0.7 : 0.6),
-                    _buildWeeklyBar('Fri', _selectedFilter == 'This Week' ? 0.9 : 0.7),
-                    _buildWeeklyBar('Sat', _selectedFilter == 'This Week' ? 0.8 : 0.2),
-                    _buildWeeklyBar('Sun', _selectedFilter == 'This Week' ? 0.5 : 0.1),
+                    _buildWeeklyBar(
+                      'Mon',
+                      _selectedFilter == 'This Week' ? 0.6 : 0.4,
+                    ),
+                    _buildWeeklyBar(
+                      'Tue',
+                      _selectedFilter == 'This Week' ? 0.4 : 0.8,
+                    ),
+                    _buildWeeklyBar(
+                      'Wed',
+                      _selectedFilter == 'This Week' ? 0.6 : 0.5,
+                    ),
+                    _buildWeeklyBar(
+                      'Thu',
+                      _selectedFilter == 'This Week' ? 0.7 : 0.6,
+                    ),
+                    _buildWeeklyBar(
+                      'Fri',
+                      _selectedFilter == 'This Week' ? 0.9 : 0.7,
+                    ),
+                    _buildWeeklyBar(
+                      'Sat',
+                      _selectedFilter == 'This Week' ? 0.8 : 0.2,
+                    ),
+                    _buildWeeklyBar(
+                      'Sun',
+                      _selectedFilter == 'This Week' ? 0.5 : 0.1,
+                    ),
                   ],
                 ),
               ),
@@ -116,10 +137,7 @@ class _DashboardWorkHoursCardState extends State<DashboardWorkHoursCard> {
         Container(
           width: 8.w,
           height: 8.w,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         SizedBox(width: 6.w),
         Text(

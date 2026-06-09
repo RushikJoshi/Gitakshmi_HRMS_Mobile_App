@@ -34,7 +34,10 @@ class DashboardLogTimelineCard extends StatelessWidget {
                   TextButton.icon(
                     onPressed: () {},
                     icon: Icon(Icons.tune_rounded, size: 16.sp),
-                    label: Text('Filter & Short', style: TextStyle(fontSize: 11.sp)),
+                    label: Text(
+                      'Filter & Short',
+                      style: TextStyle(fontSize: 11.sp),
+                    ),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.primary,
                     ),
@@ -90,9 +93,27 @@ class DashboardLogTimelineCard extends StatelessWidget {
               ),
               Divider(height: 16.h),
               // Timeline Row items
-              _buildTimelineRow('01/04/2026', '10:12 PM', '07:12 PM', 'Regular', AppColors.success),
-              _buildTimelineRow('02/04/2026', '11:42 PM', '08:20 PM', 'Late', AppColors.gray400),
-              _buildTimelineRow('03/04/2026', '12:30 PM', '09:20 PM', 'Regular', AppColors.success),
+              _buildTimelineRow(
+                '01/04/2026',
+                '10:12 PM',
+                '07:12 PM',
+                'Regular',
+                AppColors.success,
+              ),
+              _buildTimelineRow(
+                '02/04/2026',
+                '11:42 PM',
+                '08:20 PM',
+                'Late',
+                AppColors.gray400,
+              ),
+              _buildTimelineRow(
+                '03/04/2026',
+                '12:30 PM',
+                '09:20 PM',
+                'Regular',
+                AppColors.success,
+              ),
             ],
           ),
         ),
@@ -125,13 +146,19 @@ class DashboardLogTimelineCard extends StatelessWidget {
           Expanded(
             child: Text(
               checkIn,
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           Expanded(
             child: Text(
               checkOut,
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           Expanded(

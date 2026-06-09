@@ -75,7 +75,9 @@ class DashboardStatGrid extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB), // Off-white/gray50 background inside the main card
+        color: const Color(
+          0xFFF9FAFB,
+        ), // Off-white/gray50 background inside the main card
         borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: AppColors.gray200, width: 1.w),
       ),
@@ -92,11 +94,7 @@ class DashboardStatGrid extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: Icon(
-                  icon,
-                  color: AppColors.gray500,
-                  size: 16.sp,
-                ),
+                child: Icon(icon, color: AppColors.gray500, size: 16.sp),
               ),
               SizedBox(width: 8.w),
               Expanded(

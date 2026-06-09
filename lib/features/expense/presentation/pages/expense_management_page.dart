@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gitakshmi_hrms_app/features/expense/presentation/pages/add_expense_page.dart';
+import 'add_expense_page.dart';
 
 class ExpenseManagementPage extends StatefulWidget {
   const ExpenseManagementPage({super.key});
@@ -91,16 +91,16 @@ class _ExpenseManagementPageState extends State<ExpenseManagementPage> {
         shape: const CircleBorder(),
         backgroundColor: fabPurple,
         onPressed: () async {
-          // final result = await Navigator.push<ExpenseSummaryItem>(
-          //   context,
-          //   MaterialPageRoute(builder: (_) => const ApplyExpenseScreen()),
-          // );
-          // if (result != null) {
-          //   setState(() {
-          //     _expenses.insert(0, result);
-          //     _activeTabIndex = 0; // switch to Review tab
-          //   });
-          // }
+          final result = await Navigator.push<ExpenseSummaryItem>(
+            context,
+            MaterialPageRoute(builder: (_) => const ApplyExpenseScreen()),
+          );
+          if (result != null) {
+            setState(() {
+              _expenses.insert(0, result);
+              _activeTabIndex = 0; // switch to Review tab
+            });
+          }
         },
         child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
@@ -247,8 +247,7 @@ class ExpenseHeaderCard extends StatelessWidget {
             ),
             // Floating credit card with rainbow trail
             Positioned(
-             // right: -2,
-              left: 252,
+              right: 16,
               top: 18,
               child: Image.asset(
                 "assets/images/credit_card.png",

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/leave/data/models/leave_model.dart';
 
 class ApplyLeaveScreen extends StatefulWidget {
@@ -140,6 +141,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 580),
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Padding(
@@ -284,6 +286,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
     showModalBottomSheet(
       context: outerContext,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 580),
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Padding(
@@ -422,12 +425,13 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 580),
       backgroundColor: Colors.transparent,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Container(
-              height: MediaQuery.of(context).size.height * 0.70,
+              height: ResponsiveHelper.screenHeight(context) * 0.70,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(9)),
@@ -612,12 +616,13 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 580),
       backgroundColor: Colors.transparent,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Container(
-              height: MediaQuery.of(context).size.height * 0.70,
+              height: ResponsiveHelper.screenHeight(context) * 0.70,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
@@ -827,12 +832,13 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 580),
       backgroundColor: Colors.transparent,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Container(
-              height: MediaQuery.of(context).size.height * 0.72,
+              height: ResponsiveHelper.screenHeight(context) * 0.72,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(9)),
@@ -1219,67 +1225,62 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
     );
   }
 
-  Widget _topBar() {
-    return Container(
-      height: 56,
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      child: Row(
-        children: [
-          Container(
-            height: 32,
-            width: 32,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF3F0FF),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: purple,
-                size: 16,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          const Expanded(
-            child: Center(
-              child: Text(
-                "Submit Leave",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: darkText,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 32),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _topBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(11, 16, 11, 16),
-                child: _formCard(),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        leadingWidth: 50,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 18),
+          child: Center(
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                height: 32,
+                width: 32,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF3F0FF),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: purple,
+                  size: 16,
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 12, 22, 18),
-              child: _submitNowButton(),
-            ),
-          ],
+          ),
+        ),
+        title: const Text(
+          "Submit Leave",
+          style: TextStyle(
+            fontSize: 16,
+            color: darkText,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: ResponsiveCenteredView(
+          maxWidth: 580,
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(11, 16, 11, 16),
+                  child: _formCard(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 12, 22, 18),
+                child: _submitNowButton(),
+              ),
+            ],
+          ),
         ),
       ),
     );

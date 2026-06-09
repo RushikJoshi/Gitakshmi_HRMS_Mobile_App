@@ -13,11 +13,17 @@ class NotificationListTile extends StatelessWidget {
     final IconData iconData = alert["icon"] as IconData;
 
     return Card(
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
-      color: unread ? AppColors.primary.withOpacity(0.02) : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFEAECF0)),
+      ),
+      color: unread ? AppColors.primary.withValues(alpha: 0.02) : Colors.white,
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         leading: CircleAvatar(
-          backgroundColor: alertColor.withOpacity(0.1),
+          backgroundColor: alertColor.withValues(alpha: 0.1),
           child: Icon(iconData, color: alertColor),
         ),
         title: Row(
@@ -27,8 +33,9 @@ class NotificationListTile extends StatelessWidget {
               child: Text(
                 alert["title"] ?? '',
                 style: TextStyle(
-                  fontWeight: unread ? FontWeight.bold : FontWeight.w600,
+                  fontWeight: unread ? FontWeight.bold : FontWeight.w700,
                   fontSize: 14,
+                  color: const Color(0xFF101828),
                 ),
               ),
             ),
@@ -47,9 +54,15 @@ class NotificationListTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 6),
-            Text(alert["body"] ?? '', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-            const SizedBox(height: 4),
-            Text(alert["time"] ?? '', style: const TextStyle(fontSize: 10, color: AppColors.textLight)),
+            Text(
+              alert["body"] ?? '',
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              alert["time"] ?? '',
+              style: const TextStyle(fontSize: 10, color: AppColors.textLight),
+            ),
           ],
         ),
       ),

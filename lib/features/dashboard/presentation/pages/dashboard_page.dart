@@ -5,7 +5,7 @@ import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
-import 'package:gitakshmi_hrms_app/features/attendance/presentation/pages/attendance_page.dart';
+import 'package:gitakshmi_hrms_app/features/approvals/presentation/pages/approvals_page.dart';
 import 'package:gitakshmi_hrms_app/features/notification/presentation/pages/notification_page.dart';
 import 'package:gitakshmi_hrms_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_drawer.dart';
@@ -30,7 +30,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // ── Pages ────────────────────────────────────────────────────────────────
   Widget _buildHomeView(
-      CompanyConfig config, RolePermissionHelper helper, List<String> permissions) {
+    CompanyConfig config,
+    RolePermissionHelper helper,
+    List<String> permissions,
+  ) {
     final activeEmp = helper.activeEmployee;
     final role = helper.roles.firstWhere(
       (r) => r.id == activeEmp.roleId,
@@ -132,10 +135,10 @@ class _DashboardPageState extends State<DashboardPage> {
             final activeEmp = helper.activeEmployee;
             final permissions = helper.getFinalPermissions(activeEmp.id);
 
-            // 4 pages: Home | Attendance | Notifications | Profile
+            // 4 pages: Home | Approvals | Notifications | Profile
             final List<Widget> pages = [
               _buildHomeView(config, helper, permissions),
-              const AttendancePage(),
+              const ApprovalsPage(),
               const NotificationPage(),
               const ProfilePage(),
             ];
@@ -149,14 +152,14 @@ class _DashboardPageState extends State<DashboardPage> {
               canPop: false,
               onPopInvokedWithResult: (bool didPop, Object? result) async {
                 if (didPop) return;
-                
+
                 if (_bottomIndex != 0) {
                   setState(() {
                     _bottomIndex = 0;
                   });
                   return;
                 }
-                
+
                 final bool? shouldExit = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -165,7 +168,10 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     title: const Row(
                       children: [
-                        Icon(Icons.exit_to_app_rounded, color: AppColors.blue600),
+                        Icon(
+                          Icons.exit_to_app_rounded,
+                          color: AppColors.blue600,
+                        ),
                         SizedBox(width: 10),
                         Text(
                           'Exit App',
@@ -230,7 +236,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.blue600,
-
                   ),
                   child: Material(
                     color: Colors.transparent,
@@ -271,9 +276,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                         _buildNavItem(
                           index: 1,
-                          activeIcon: Icons.fingerprint_rounded,
-                          inactiveIcon: Icons.fingerprint_rounded,
-                          label: 'Attendance',
+                          activeIcon: Icons.assignment_turned_in_rounded,
+                          inactiveIcon: Icons.assignment_turned_in_outlined,
+                          label: 'Approvals',
                           activeColor: navActiveColor,
                         ),
                         // Space for FAB
