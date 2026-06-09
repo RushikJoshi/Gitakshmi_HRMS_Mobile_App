@@ -26,13 +26,13 @@ class _TrackingPageState extends State<TrackingPage> {
 
   final List<Map<String, String>> _stoppages = [
     {
-      "location": "BPCL Petrol Pump",
+      "location": "BPCL Petrol Pump, Andheri Kurla Road, Andheri East, Mumbai",
       "duration": "10 Mins",
       "reason": "Fuel Refill",
       "time": "02:10 PM"
     },
     {
-      "location": "Starbucks Coffee",
+      "location": "Starbucks Coffee, Powai Plaza, Hiranandani Gardens, Powai, Mumbai",
       "duration": "20 Mins",
       "reason": "Client Meeting Prep",
       "time": "01:30 PM"
@@ -40,13 +40,13 @@ class _TrackingPageState extends State<TrackingPage> {
   ];
 
   final List<Map<String, String>> _timeline = [
-    {"time": "09:00 AM", "event": "Left HQ Office (Tracking Auto Started)"},
-    {"time": "09:32 AM", "event": "Reached Tata Motors HQ (18 km travel)"},
-    {"time": "10:15 AM", "event": "Checked-out Tata Motors HQ (Completed)"},
-    {"time": "11:00 AM", "event": "Starbucks Coffee Stoppage (Stopped: 20 mins)"},
+    {"time": "09:00 AM", "event": "Left HQ Office, Satellite, Ahmedabad (Tracking Auto Started)"},
+    {"time": "09:32 AM", "event": "Reached Tata Motors HQ, One World Center, Lower Parel, Mumbai (18 km travel)"},
+    {"time": "10:15 AM", "event": "Checked-out Tata Motors HQ, One World Center, Lower Parel, Mumbai (Completed)"},
+    {"time": "11:00 AM", "event": "Starbucks Coffee, Powai Plaza, Powai (Stopped: 20 mins)"},
     {"time": "12:15 PM", "event": "Lunch Break (Idle state: 45 mins)"},
-    {"time": "03:15 PM", "event": "Checked-out Reliance Corporate Park (Completed)"},
-    {"time": "05:30 PM", "event": "Wipro Tech Park Visit Missed (Marked by scheduler)"}
+    {"time": "03:15 PM", "event": "Checked-out Reliance Corporate Park, Thane-Belapur Road, Ghansoli, Navi Mumbai (Completed)"},
+    {"time": "05:30 PM", "event": "Wipro IT Park, TTC Industrial Area, Airoli, Navi Mumbai Visit Missed (Marked by scheduler)"}
   ];
 
   final List<Map<String, dynamic>> _managerTeam = [
@@ -89,7 +89,7 @@ class _TrackingPageState extends State<TrackingPage> {
         "company": "Tata Group Ltd",
         "contact": "Akash Deshmukh",
         "phone": "+91 9876543210",
-        "address": "Worli, Mumbai",
+        "address": "One World Center, Senapati Bapat Marg, Lower Parel, Mumbai",
         "purpose": "Sales Presentation & Pitch",
         "priority": "High",
         "duration": "60 Mins",
@@ -104,7 +104,7 @@ class _TrackingPageState extends State<TrackingPage> {
         "company": "Reliance Industries Ltd",
         "contact": "Rajiv Mehta",
         "phone": "+91 9898989898",
-        "address": "Ghansoli, Navi Mumbai",
+        "address": "Reliance Corporate Park, Thane-Belapur Road, Ghansoli, Navi Mumbai",
         "purpose": "Contract Renewal Discussion",
         "priority": "Medium",
         "duration": "45 Mins",
@@ -119,7 +119,7 @@ class _TrackingPageState extends State<TrackingPage> {
         "company": "Wipro Technologies",
         "contact": "Neha Sen",
         "phone": "+91 9900990099",
-        "address": "Airoli, Navi Mumbai",
+        "address": "Wipro IT Park, TTC Industrial Area, Airoli, Navi Mumbai",
         "purpose": "Requirements Gathering",
         "priority": "Low",
         "duration": "30 Mins",
@@ -178,7 +178,7 @@ class _TrackingPageState extends State<TrackingPage> {
                 const SizedBox(height: 8),
                 AppTextField(
                   controller: addressController,
-                  labelText: 'Address',
+                  labelText: 'Exact Address',
                 ),
                 const SizedBox(height: 12),
                 AppDropdownField<String>(
@@ -467,7 +467,7 @@ class _TrackingPageState extends State<TrackingPage> {
             const SizedBox(height: 4),
             Text('Purpose: ${visit["purpose"]}'),
             const SizedBox(height: 4),
-            Text('Address: ${visit["address"]}'),
+            Text('Exact Address: ${_formatExactLocation(visit["address"])}'),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -530,6 +530,11 @@ class _TrackingPageState extends State<TrackingPage> {
         ],
       ),
     );
+  }
+
+  String _formatExactLocation(String? value) {
+    final location = value?.trim() ?? '';
+    return location.isEmpty ? 'Exact address not provided' : location;
   }
 
   @override

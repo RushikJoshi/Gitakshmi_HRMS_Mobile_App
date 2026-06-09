@@ -892,15 +892,18 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
 
   String _formatPlacemark(Placemark placeMark) {
     final parts = <String>[
-      if (placeMark.name?.isNotEmpty == true) placeMark.name!,
-      if (placeMark.subLocality?.isNotEmpty == true) placeMark.subLocality!,
-      if (placeMark.locality?.isNotEmpty == true) placeMark.locality!,
-      if (placeMark.administrativeArea?.isNotEmpty == true)
-        placeMark.administrativeArea!,
-      if (placeMark.postalCode?.isNotEmpty == true) placeMark.postalCode!,
-      if (placeMark.country?.isNotEmpty == true) placeMark.country!,
+      if (placeMark.subThoroughfare?.isNotEmpty == true)
+        placeMark.subThoroughfare!,
+      if (placeMark.thoroughfare?.isNotEmpty == true) placeMark.thoroughfare!,
+      if (placeMark.street?.isNotEmpty == true) placeMark.street!,
     ];
-    return parts.isEmpty ? 'Current location found' : parts.join(', ');
+    final uniqueParts = <String>[];
+    for (final part in parts) {
+      if (!uniqueParts.contains(part)) {
+        uniqueParts.add(part);
+      }
+    }
+    return uniqueParts.isEmpty ? 'Current location found' : uniqueParts.join(', ');
   }
 
   Future<void> _openMap() async {

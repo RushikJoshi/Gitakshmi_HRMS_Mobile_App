@@ -58,7 +58,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ],
             ),
-            SizedBox(height: 110.h),
+            SizedBox(height: 130.h),
             DashboardPunchCard(
               onNavigateTab: (index) => setState(() => _bottomIndex = index),
             ),
