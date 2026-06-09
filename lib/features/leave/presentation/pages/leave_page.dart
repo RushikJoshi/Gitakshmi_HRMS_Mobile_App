@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/leave/data/models/leave_model.dart';
 import 'package:gitakshmi_hrms_app/features/leave/presentation/pages/apply_leave_page.dart';
 import 'package:gitakshmi_hrms_app/features/leave/presentation/widgets/leave_summary_header.dart';
@@ -21,70 +22,69 @@ class _LeaveSummaryScreenState extends State<LeaveSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = ResponsiveHelper.isTablet(context) || ResponsiveHelper.isDesktop(context);
+    final double horizontalPadding = isTablet ? 32 : 12;
+
     return Scaffold(
       backgroundColor: bgColor,
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
-        backgroundColor: fabPurple,
-        onPressed: () async {
-          final result = await Navigator.push<LeaveEntry>(
-            context,
-            MaterialPageRoute(builder: (_) => const ApplyLeaveScreen()),
-          );
-          if (result != null) {
-            setState(() {
-              _reviewLeaves.add(result);
-              selectedTab = 0; // switch to Review tab
-            });
-          }
-        },
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
-      ),
       body: SafeArea(
         top: false,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final double screenWidth = constraints.maxWidth;
-            final bool isTablet = screenWidth > 600;
-
-            final double horizontalPadding = isTablet ? 32 : 12;
-            final double maxContentWidth = isTablet ? 520 : double.infinity;
-
-            return Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: maxContentWidth),
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    LeaveSummaryHeader(horizontalPadding: horizontalPadding),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 14),
-                          LeaveTabsControl(
-                            selectedTab: selectedTab,
-                            onTabSelected: (index) {
-                              setState(() {
-                                selectedTab = index;
-                              });
-                            },
-                            badgeCount: _reviewLeaves.length,
-                          ),
-                          const SizedBox(height: 14),
-                          LeaveSubmittedCard(
-                            selectedTab: selectedTab,
-                            reviewLeaves: _reviewLeaves,
-                          ),
-                          const SizedBox(height: 90),
-                        ],
-                      ),
+        child: ResponsiveCenteredView(
+          maxWidth: 600,
+          child: Stack(
+            children: [
+              ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  LeaveSummaryHeader(horizontalPadding: horizontalPadding),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 14),
+                        LeaveTabsControl(
+                          selectedTab: selectedTab,
+                          onTabSelected: (index) {
+                            setState(() {
+                              selectedTab = index;
+                            });
+                          },
+                          badgeCount: _reviewLeaves.length,
+                        ),
+                        const SizedBox(height: 14),
+                        LeaveSubmittedCard(
+                          selectedTab: selectedTab,
+                          reviewLeaves: _reviewLeaves,
+                        ),
+                        const SizedBox(height: 90),
+                      ],
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              Positioned(
+                bottom: 24,
+                right: horizontalPadding,
+                child: FloatingActionButton(
+                  shape: const CircleBorder(),
+                  backgroundColor: fabPurple,
+                  onPressed: () async {
+                    final result = await Navigator.push<LeaveEntry>(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ApplyLeaveScreen()),
+                    );
+                    if (result != null) {
+                      setState(() {
+                        _reviewLeaves.add(result);
+                        selectedTab = 0; // switch to Review tab
+                      });
+                    }
+                  },
+                  child: const Icon(Icons.add, color: Colors.white, size: 30),
                 ),
               ),
-            );
-          },
+            ],
+          ),
         ),
       ),
     );

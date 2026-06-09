@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/notification/presentation/widgets/notification_list_tile.dart';
 
 class NotificationPage extends StatelessWidget {
@@ -34,12 +35,34 @@ class NotificationPage extends StatelessWidget {
       },
     ];
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: alerts.length,
-      itemBuilder: (context, index) {
-        return NotificationListTile(alert: alerts[index]);
-      },
+    return Scaffold(
+      backgroundColor: AppColors.backgroundPrimary,
+      appBar: AppBar(
+        title: const Text(
+          "Alerts",
+          style: TextStyle(
+            color: Color(0xFF101828),
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: ResponsiveCenteredView(
+          maxWidth: 600,
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+            physics: const BouncingScrollPhysics(),
+            itemCount: alerts.length,
+            itemBuilder: (context, index) {
+              return NotificationListTile(alert: alerts[index]);
+            },
+          ),
+        ),
+      ),
     );
   }
 }

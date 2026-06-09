@@ -7,7 +7,6 @@ import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
 import 'package:gitakshmi_hrms_app/features/approvals/presentation/widgets/approval_document_preview.dart';
 import 'package:gitakshmi_hrms_app/features/approvals/presentation/widgets/approval_history_timeline.dart';
 import 'package:gitakshmi_hrms_app/features/approvals/presentation/widgets/approval_action_panel.dart';
-import 'package:gitakshmi_hrms_app/core/widgets/textfield/app_text_field.dart';
 
 class ApprovalDetailPage extends StatefulWidget {
   final UnifiedApprovalRequest request;
