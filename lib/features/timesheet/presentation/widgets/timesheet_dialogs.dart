@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gitakshmi_hrms_app/core/widgets/bottomsheet/app_date_picker.dart';
 
 // ─── Shared styling constants ─────────────────────────────────────────────────
 const Color _purple    = Color(0xff7A5AF8);
@@ -9,17 +10,19 @@ const Color _blueLabel = Color(0xFF2E63B4);
 // ═════════════════════════════════════════════════════════════════════════════
 // STEP 1 — "Raise a Request" options popup
 // ═════════════════════════════════════════════════════════════════════════════
-void showRaiseRequestOptionsDialog(BuildContext rootContext) {
-  showDialog(
+void showRaiseRequestOptionsDialog(BuildContext rootContext, {bool isPunchIn = false}) {
+  showModalBottomSheet(
     context: rootContext,
-    barrierDismissible: true,
-    builder: (_) => _RaiseRequestOptionsDialog(rootContext: rootContext),
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _RaiseRequestOptionsDialog(rootContext: rootContext, isPunchIn: isPunchIn),
   );
 }
 
 class _RaiseRequestOptionsDialog extends StatefulWidget {
   final BuildContext rootContext;
-  const _RaiseRequestOptionsDialog({required this.rootContext});
+  final bool isPunchIn;
+  const _RaiseRequestOptionsDialog({required this.rootContext, required this.isPunchIn});
 
   @override
   State<_RaiseRequestOptionsDialog> createState() =>
@@ -32,87 +35,83 @@ class _RaiseRequestOptionsDialogState
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 36),
-            padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Raise a Request",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: _darkText,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Illustration
-                SizedBox(
-                  height: 120,
-                  child: Image.asset(
-                    'assets/images/request_image.png',
-                    height: 171,
-                    width: 158,
-                    errorBuilder: (_, __, ___) => Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.campaign, color: Colors.indigo, size: 48),
-                        SizedBox(width: 12),
-                        Icon(Icons.back_hand, color: Colors.brown, size: 44),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Option 1 — Punch Out Missing Request → direct tap
-                _OptionRow(
-                  icon: Icons.timer_off_outlined,
-                  label: "Punch Out Missing Request",
-                  onTap: () {
-                    Navigator.pop(context);
-                    showPunchOutRequestDialog(widget.rootContext);
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // Option 2 — Send Reminder for Attendance (expandable)
-                _ExpandableOptionRow(
-                  icon: Icons.shield_outlined,
-                  label: "Send Reminder for Attendance",
-                  isExpanded: _expanded == 1,
-                  onHeaderTap: () =>
-                      setState(() => _expanded = _expanded == 1 ? null : 1),
-                  onActionTap: () {
-                    Navigator.pop(context);
-                    showReminderConfirmDialog(widget.rootContext);
-                  },
-                  actionLabel: "Send Reminder Now →",
-                ),
-                const SizedBox(height: 28),
-
-                // Close → back to last screen
-                _CloseButton(onTap: () => Navigator.pop(context)),
-              ],
-            ),
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 36),
+          padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          Positioned(top: 0, child: _FloatingClockIcon()),
-        ],
-      ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Raise a Request",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: _darkText,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Illustration
+              SizedBox(
+                height: 120,
+                child: Image.asset(
+                  'assets/images/request_image.png',
+                  height: 171,
+                  width: 158,
+                  errorBuilder: (_, __, ___) => Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.campaign, color: Colors.indigo, size: 48),
+                      SizedBox(width: 12),
+                      Icon(Icons.back_hand, color: Colors.brown, size: 44),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Option 1 — Punch In / Out Missing Request → direct tap
+              _OptionRow(
+                icon: widget.isPunchIn ? Icons.timer_outlined : Icons.timer_off_outlined,
+                label: widget.isPunchIn ? "Punch In Missing Request" : "Punch Out Missing Request",
+                onTap: () {
+                  Navigator.pop(context);
+                  showPunchRequestDialog(widget.rootContext, isPunchIn: widget.isPunchIn);
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Option 2 — Send Reminder for Attendance (expandable)
+              _ExpandableOptionRow(
+                icon: Icons.shield_outlined,
+                label: "Send Reminder for Attendance",
+                isExpanded: _expanded == 1,
+                onHeaderTap: () =>
+                    setState(() => _expanded = _expanded == 1 ? null : 1),
+                onActionTap: () {
+                  Navigator.pop(context);
+                  showReminderConfirmDialog(widget.rootContext);
+                },
+                actionLabel: "Send Reminder Now →",
+              ),
+              const SizedBox(height: 28),
+
+              // Close → back to last screen
+              _CloseButton(onTap: () => Navigator.pop(context)),
+            ],
+          ),
+        ),
+        Positioned(top: 0, child: _FloatingClockIcon()),
+      ],
     );
   }
 }
@@ -120,23 +119,78 @@ class _RaiseRequestOptionsDialogState
 // ═════════════════════════════════════════════════════════════════════════════
 // STEP 2 — "Punch Out Request" form popup
 // ═════════════════════════════════════════════════════════════════════════════
-void showPunchOutRequestDialog(BuildContext rootContext) {
-  showDialog(
+void showPunchRequestDialog(BuildContext rootContext, {required bool isPunchIn}) {
+  showModalBottomSheet(
     context: rootContext,
-    barrierDismissible: true,
-    builder: (_) => _PunchOutRequestDialog(rootContext: rootContext),
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _PunchRequestDialog(rootContext: rootContext, isPunchIn: isPunchIn),
   );
 }
 
-class _PunchOutRequestDialog extends StatelessWidget {
+void showPunchOutRequestDialog(BuildContext rootContext) {
+  showPunchRequestDialog(rootContext, isPunchIn: false);
+}
+
+void showPunchInRequestDialog(BuildContext rootContext) {
+  showPunchRequestDialog(rootContext, isPunchIn: true);
+}
+
+class _PunchRequestDialog extends StatefulWidget {
   final BuildContext rootContext;
-  const _PunchOutRequestDialog({required this.rootContext});
+  final bool isPunchIn;
+  const _PunchRequestDialog({required this.rootContext, required this.isPunchIn});
+
+  @override
+  State<_PunchRequestDialog> createState() => _PunchRequestDialogState();
+}
+
+class _PunchRequestDialogState extends State<_PunchRequestDialog> {
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+
+  String _formatDate(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  }
+
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return "${hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} $period";
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await AppDatePicker.showSingle(
+      context: context,
+      title: "Select Date",
+      subtitle: "Choose the request date",
+      initialDate: _selectedDate ?? DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
@@ -144,128 +198,137 @@ class _PunchOutRequestDialog extends StatelessWidget {
           Container(
             margin: const EdgeInsets.only(top: 36),
             padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title
-                const Center(
-                  child: Text(
-                    "Punch Out Request",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: _darkText,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Date
-                const Text("Date",
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _blueLabel)),
-                const SizedBox(height: 8),
-                const _DropdownField(
-                    icon: Icons.calendar_month_outlined,
-                    hint: "Select Date"),
-                const SizedBox(height: 16),
-
-                // Time
-                const Text("Time",
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _blueLabel)),
-                const SizedBox(height: 8),
-                const _DropdownField(
-                    icon: Icons.access_time, hint: "Select Time"),
-                const SizedBox(height: 16),
-
-                // Reason
-                const Text("Reason",
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _blueLabel)),
-                const SizedBox(height: 8),
-                Container(
-                  height: 100,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFD0D5DD)),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const TextField(
-                    maxLines: null,
-                    decoration: InputDecoration(
-                      hintText: "Type Here",
-                      hintStyle: TextStyle(
-                          fontSize: 13, color: Color(0xFF98A2B3)),
-                      prefixIcon: Padding(
-                        padding: EdgeInsets.only(bottom: 55),
-                        child: Icon(Icons.edit_note,
-                            color: Color(0xFF667085), size: 20),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Center(
+                    child: Text(
+                      widget.isPunchIn ? "Punch In Request" : "Punch Out Request",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: _darkText,
                       ),
-                      border: InputBorder.none,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Submit → opens Reminder popup
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      showReminderConfirmDialog(rootContext);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _purple,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24)),
-                      elevation: 0,
-                    ),
-                    child: const Text("Submit Request",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600)),
+                  // Date
+                  const Text("Date",
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _blueLabel)),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: _pickDate,
+                    child: _DropdownField(
+                        icon: Icons.calendar_month_outlined,
+                        hint: _selectedDate != null ? _formatDate(_selectedDate!) : "Select Date"),
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 16),
 
-                // Cancel → shows Leave popup
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      showLeaveDialog(rootContext);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: _purple),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24)),
-                    ),
-                    child: const Text("Cancel Request",
-                        style: TextStyle(
-                            color: _purple,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600)),
+                  // Time
+                  const Text("Time",
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _blueLabel)),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: _pickTime,
+                    child: _DropdownField(
+                        icon: Icons.access_time,
+                        hint: _selectedTime != null ? _formatTime(_selectedTime!) : "Select Time"),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+
+                  // Reason
+                  const Text("Reason",
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _blueLabel)),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFFD0D5DD)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const TextField(
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        hintText: "Type Here",
+                        hintStyle: TextStyle(
+                            fontSize: 13, color: Color(0xFF98A2B3)),
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(bottom: 55),
+                          child: Icon(Icons.edit_note,
+                              color: Color(0xFF667085), size: 20),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Submit → opens Reminder popup
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        showReminderConfirmDialog(widget.rootContext);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _purple,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24)),
+                        elevation: 0,
+                      ),
+                      child: const Text("Submit Request",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Cancel → shows Leave popup
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        showLeaveDialog(widget.rootContext);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: _purple),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24)),
+                      ),
+                      child: const Text("Cancel Request",
+                          style: TextStyle(
+                              color: _purple,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Positioned(top: 0, child: _FloatingClockIcon()),
@@ -279,9 +342,10 @@ class _PunchOutRequestDialog extends StatelessWidget {
 // STEP 3 — "Raise a Request – Send Reminder" confirmation popup
 // ═════════════════════════════════════════════════════════════════════════════
 void showReminderConfirmDialog(BuildContext rootContext) {
-  showDialog(
+  showModalBottomSheet(
     context: rootContext,
-    barrierDismissible: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (_) => _ReminderConfirmDialog(rootContext: rootContext),
   );
 }
@@ -292,78 +356,74 @@ class _ReminderConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 36),
-            padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Raise a Request",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: _darkText,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Illustration — red clipboard with clock
-                Image.asset(
-                  'assets/images/reminder_image.png',
-                  height: 100,
-                  errorBuilder: (_, __, ___) => Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      Icon(Icons.assignment_late,
-                          color: Colors.red.shade700, size: 80),
-                      const Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child:
-                            Icon(Icons.alarm, color: Colors.grey, size: 32),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-                const Text(
-                  "Are you sure want to\nsend Reminder ?",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: _blueLabel,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 28),
-
-                // Close → opens Leave popup
-                _CloseButton(
-                  onTap: () {
-                    Navigator.pop(context);
-                    showLeaveDialog(rootContext);
-                  },
-                ),
-              ],
-            ),
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 36),
+          padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          Positioned(top: 0, child: _FloatingClockIcon()),
-        ],
-      ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Raise a Request",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: _darkText,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Illustration — red clipboard with clock
+              Image.asset(
+                'assets/images/reminder_image.png',
+                height: 100,
+                errorBuilder: (_, __, ___) => Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Icon(Icons.assignment_late,
+                        color: Colors.red.shade700, size: 80),
+                    const Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child:
+                          Icon(Icons.alarm, color: Colors.grey, size: 32),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              const Text(
+                "Are you sure want to\nsend Reminder ?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: _blueLabel,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // Close → opens Leave popup
+              _CloseButton(
+                onTap: () {
+                  Navigator.pop(context);
+                  showLeaveDialog(rootContext);
+                },
+              ),
+            ],
+          ),
+        ),
+        Positioned(top: 0, child: _FloatingClockIcon()),
+      ],
     );
   }
 }
@@ -372,9 +432,10 @@ class _ReminderConfirmDialog extends StatelessWidget {
 // STEP 4 — "You are on leave" popup
 // ═════════════════════════════════════════════════════════════════════════════
 void showLeaveDialog(BuildContext rootContext) {
-  showDialog(
+  showModalBottomSheet(
     context: rootContext,
-    barrierDismissible: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (_) => const _LeaveDialog(),
   );
 }
@@ -384,68 +445,64 @@ class _LeaveDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 36),
-            padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Raise a Request",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: _darkText,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Illustration — person on leave
-                Image.asset(
-                  'assets/images/on_leave_image.png',
-                  height: 120,
-                  errorBuilder: (_, __, ___) => const Icon(
-                      Icons.beach_access,
-                      color: Colors.teal,
-                      size: 80),
-                ),
-
-                const SizedBox(height: 20),
-
-                const Text(
-                  "You are on leave",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: _blueLabel,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  "(10 May 2025)",
-                  style: TextStyle(fontSize: 13, color: _greyText),
-                ),
-                const SizedBox(height: 28),
-
-                // Close → pop dialog and return to last screen
-                _CloseButton(onTap: () => Navigator.pop(context)),
-              ],
-            ),
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 36),
+          padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          Positioned(top: 0, child: _FloatingClockIcon()),
-        ],
-      ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Raise a Request",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: _darkText,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Illustration — person on leave
+              Image.asset(
+                'assets/images/on_leave_image.png',
+                height: 120,
+                errorBuilder: (_, __, ___) => const Icon(
+                    Icons.beach_access,
+                    color: Colors.teal,
+                    size: 80),
+              ),
+
+              const SizedBox(height: 20),
+
+              const Text(
+                "You are on leave",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: _blueLabel,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                "(10 May 2025)",
+                style: TextStyle(fontSize: 13, color: _greyText),
+              ),
+              const SizedBox(height: 28),
+
+              // Close → pop dialog and return to last screen
+              _CloseButton(onTap: () => Navigator.pop(context)),
+            ],
+          ),
+        ),
+        Positioned(top: 0, child: _FloatingClockIcon()),
+      ],
     );
   }
 }

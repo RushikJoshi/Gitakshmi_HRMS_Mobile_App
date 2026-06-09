@@ -46,7 +46,12 @@ class AppCard extends StatelessWidget {
                 ),
               ),
             ],
-            Expanded(child: Padding(padding: padding ?? const EdgeInsets.all(16.0), child: child)),
+            Expanded(
+              child: Padding(
+                padding: padding ?? const EdgeInsets.all(16.0),
+                child: child,
+              ),
+            ),
             if (!highlightOnLeft) ...[
               Container(
                 width: borderHighlightWidth,
@@ -73,9 +78,7 @@ class AppCard extends StatelessWidget {
       elevation: elevation,
       margin: margin,
       color: backgroundColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.r),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
       child: borderHighlightColor != null ? cardContent : cardContent,
     );
   }

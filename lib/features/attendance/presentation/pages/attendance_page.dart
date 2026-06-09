@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_face_liveness/flutter_face_liveness.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 
@@ -46,7 +46,10 @@ class AttendancePage extends StatelessWidget {
               SizedBox(height: 20.h),
               Text(
                 'Use Punch In from Dashboard',
-                style: TextStyle(fontSize: 16.sp, color: AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -792,7 +795,11 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
         children: [
           Padding(
             padding: EdgeInsets.only(top: 2.h),
-            child: const Icon(Icons.location_on, color: Color(0xFFEF5350), size: 20),
+            child: const Icon(
+              Icons.location_on,
+              color: Color(0xFFEF5350),
+              size: 20,
+            ),
           ),
           SizedBox(width: 10.w),
           Expanded(
@@ -903,7 +910,9 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
         uniqueParts.add(part);
       }
     }
-    return uniqueParts.isEmpty ? 'Current location found' : uniqueParts.join(', ');
+    return uniqueParts.isEmpty
+        ? 'Current location found'
+        : uniqueParts.join(', ');
   }
 
   Future<void> _openMap() async {
@@ -1035,7 +1044,7 @@ class FaceScannerPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                   Row(
+                  Row(
                     children: [
                       Icon(
                         Icons.warning_amber_rounded,

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/phone_sign_in_page.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/signup_page.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/pages/dashboard_page.dart';
-
-import '../../../dashboard/presentation/pages/dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -56,203 +55,189 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  double _responsiveGap(double size) {
+    final height = ResponsiveHelper.screenHeight(context);
+    if (height < 680) {
+      return size * 0.6;
+    } else if (height < 800) {
+      return size * 0.8;
+    }
+    return size;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF17172B),
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: Center(
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(22),
-                topRight: Radius.circular(22),
-              ),
-            ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(26, 30, 26, 30),
-              child: Column(
-                children: [
-                  Image.asset(
-                    "assets/images/logo.png",
-                    height: 92,
-                    fit: BoxFit.contain,
+        child: ResponsiveCenteredView(
+          maxWidth: 460,
+          padding: const EdgeInsets.symmetric(horizontal: 26),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: _responsiveGap(22)),
+                Image.asset(
+                  "assets/images/logo.png",
+                  height: 82,
+                  fit: BoxFit.contain,
+                ),
+                SizedBox(height: _responsiveGap(12)),
+                const Text(
+                  "Sign In",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
-
-                  const SizedBox(height: 8),
-
-                  const Text(
-                    "Sign In",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black,
+                ),
+                SizedBox(height: _responsiveGap(6)),
+                const Text(
+                  "Sign in to my account",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.gray500,
+                  ),
+                ),
+                SizedBox(height: _responsiveGap(28)),
+                _label("Email"),
+                SizedBox(height: _responsiveGap(8)),
+                _inputField(
+                  controller: emailController,
+                  hint: "My Email",
+                  icon: Icons.mail_outline_rounded,
+                  errorText: emailError,
+                ),
+                SizedBox(height: _responsiveGap(20)),
+                _label("Password"),
+                SizedBox(height: _responsiveGap(8)),
+                _inputField(
+                  controller: passwordController,
+                  hint: "My Password",
+                  icon: Icons.center_focus_weak_rounded,
+                  errorText: passwordError,
+                  obscureText: isPasswordHide,
+                  suffixIcon: isPasswordHide
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  onSuffixTap: () {
+                    setState(() {
+                      isPasswordHide = !isPasswordHide;
+                    });
+                  },
+                ),
+                SizedBox(height: _responsiveGap(12)),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          rememberMe = !rememberMe;
+                        });
+                      },
+                      child: Icon(
+                        rememberMe
+                            ? Icons.check_box_rounded
+                            : Icons.check_box_outline_blank_rounded,
+                        color: rememberMe ? AppColors.primaryPurple : AppColors.borderLight,
+                        size: 20,
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  const Text(
-                    "Sign in to my account",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF475467),
+                    const SizedBox(width: 8),
+                    const Text(
+                      "Remember Me",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textDarkGray,
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  _label("Email"),
-                  const SizedBox(height: 8),
-                  _inputField(
-                    controller: emailController,
-                    hint: "My Email",
-                    icon: Icons.mail_outline_rounded,
-                    errorText: emailError,
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  _label("Password"),
-                  const SizedBox(height: 8),
-                  _inputField(
-                    controller: passwordController,
-                    hint: "My Password",
-                    icon: Icons.lock_outline_rounded,
-                    errorText: passwordError,
-                    obscureText: isPasswordHide,
-                    suffixIcon: isPasswordHide
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    onSuffixTap: () {
-                      setState(() {
-                        isPasswordHide = !isPasswordHide;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            rememberMe = !rememberMe;
-                          });
-                        },
-                        child: Icon(
-                          rememberMe
-                              ? Icons.check_box_rounded
-                              : Icons.check_box_outline_blank_rounded,
-                          color: AppColors.border,
-                          size: 18,
-                        ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () {},
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        "Remember Me",
+                      child: const Text(
+                        "Forgot Password",
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () {},
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text(
-                          "Forgot Password",
-                          style: TextStyle(
-                            color: AppColors.border,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  _gradientButton("Sign In"),
-
-                  const SizedBox(height: 34),
-
-                  const Row(
-                    children: [
-                      Expanded(child: Divider(color: Color(0xFFE4E7EC))),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          "OR",
-                          style: TextStyle(
-                            color: Color(0xFFB0B7C3),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      Expanded(child: Divider(color: Color(0xFFE4E7EC))),
-                    ],
-                  ),
-
-                  const SizedBox(height: 34),
-
-                  _outlineButton(
-                    text: "Sign in With Employee ID",
-                    icon: Icons.badge_rounded,
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  _outlineButton(
-                    text: "Sign in With Phone",
-                    icon: Icons.phone_rounded,
-                  ),
-
-                  const SizedBox(height: 34),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Don’t have an account? ",
-                        style: TextStyle(
-                          fontSize: 11,
+                          color: AppColors.primaryPurple,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black87,
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SignUpScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "Sign Up Here",
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.border,
+                    ),
+                  ],
+                ),
+                SizedBox(height: _responsiveGap(24)),
+                _gradientButton("Sign In"),
+                SizedBox(height: _responsiveGap(32)),
+                const Row(
+                  children: [
+                    Expanded(child: Divider(color: AppColors.dividerLight, thickness: 1)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        "OR",
+                        style: TextStyle(
+                          color: AppColors.gray400,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: AppColors.dividerLight, thickness: 1)),
+                  ],
+                ),
+                SizedBox(height: _responsiveGap(32)),
+                _outlineButton(
+                  text: "Sign in With Employee ID",
+                  icon: Icons.badge_outlined,
+                ),
+                SizedBox(height: _responsiveGap(14)),
+                _outlineButton(
+                  text: "Sign in With Phone",
+                  icon: Icons.phone_rounded,
+                ),
+                SizedBox(height: _responsiveGap(34)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Don’t have an account? ",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignUpScreen(),
                           ),
+                        );
+                      },
+                      child: const Text(
+                        "Sign Up Here",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryPurple,
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: _responsiveGap(16)),
+              ],
             ),
           ),
         ),
@@ -266,8 +251,8 @@ class _LoginPageState extends State<LoginPage> {
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 12,
-          color: Color(0xFF667085),
+          fontSize: 14,
+          color: AppColors.textDarkGray,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -292,14 +277,14 @@ class _LoginPageState extends State<LoginPage> {
           height: 48,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
                 color: hasError
                     ? Colors.red.withOpacity(0.10)
-                    : const Color(0x339747FF),
-                blurRadius: hasError ? 4 : 0,
-                spreadRadius: hasError ? 1 : 0,
+                    : const Color(0x0A101828),
+                blurRadius: 4,
+                spreadRadius: 1,
               ),
             ],
           ),
@@ -308,7 +293,7 @@ class _LoginPageState extends State<LoginPage> {
             obscureText: obscureText,
             style: const TextStyle(
               color: Colors.black,
-              fontSize: 13,
+              fontSize: 14,
             ),
             onChanged: (value) {
               if (hasError) {
@@ -326,48 +311,47 @@ class _LoginPageState extends State<LoginPage> {
               fillColor: Colors.white,
               hintText: hint,
               hintStyle: const TextStyle(
-                color: Color(0xFF98A2B3),
-                fontSize: 13,
+                color: AppColors.gray400,
+                fontSize: 14,
               ),
               prefixIcon: Icon(
                 icon,
-                color: hasError ? Colors.red : AppColors.border,
+                color: hasError ? Colors.red : AppColors.primaryPurple,
                 size: 20,
               ),
               suffixIcon: hasError && hint.toLowerCase().contains("email")
                   ? const Icon(
-                Icons.error_outline,
-                color: Colors.red,
-                size: 20,
-              )
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 20,
+                    )
                   : suffixIcon != null
-                  ? GestureDetector(
-                onTap: onSuffixTap,
-                child: Icon(
-                  suffixIcon,
-                  color: hasError ? Colors.red : AppColors.border,
-                  size: 20,
-                ),
-              )
-                  : null,
+                      ? GestureDetector(
+                          onTap: onSuffixTap,
+                          child: Icon(
+                            suffixIcon,
+                            color: hasError ? Colors.red : AppColors.primaryPurple,
+                            size: 20,
+                          ),
+                        )
+                      : null,
               contentPadding: const EdgeInsets.symmetric(horizontal: 14),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: hasError ? Colors.red : const Color(0xFF98A2B3),
+                  color: hasError ? Colors.red : AppColors.borderLight,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: hasError ? Colors.red : const Color(0xFF9B8AFB),
+                  color: hasError ? Colors.red : AppColors.primaryPurple,
                   width: 1.5,
                 ),
               ),
             ),
           ),
         ),
-
         if (errorText != null)
           Padding(
             padding: const EdgeInsets.only(top: 6, left: 2),
@@ -385,34 +369,24 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _gradientButton(String text) {
-    return Container(
-      height: 54,
+    return SizedBox(
+      height: 48,
       width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          colors: [
-            AppColors.button_grad_1,
-            AppColors.button_grad_2,
-            AppColors.button_grad_3,
-          ],
-        ),
-      ),
       child: ElevatedButton(
         onPressed: validateLogin,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
+          backgroundColor: AppColors.primaryPurple,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(30),
           ),
         ),
         child: Text(
           text,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -424,7 +398,7 @@ class _LoginPageState extends State<LoginPage> {
     required IconData icon,
   }) {
     return SizedBox(
-      height: 50,
+      height: 48,
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: () {
@@ -437,24 +411,24 @@ class _LoginPageState extends State<LoginPage> {
         },
         icon: Icon(
           icon,
-          color: AppColors.border,
-          size: 22,
+          color: AppColors.primaryPurple,
+          size: 20,
         ),
         label: Text(
           text,
           style: const TextStyle(
-            color: AppColors.border,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
+            color: AppColors.primaryPurple,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
           ),
         ),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(
-            color: AppColors.border,
-            width: 1.4,
+            color: AppColors.primaryPurple,
+            width: 1.0,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(30),
           ),
         ),
       ),

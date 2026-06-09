@@ -53,7 +53,10 @@ class DashboardDailyTasksCard extends StatelessWidget {
                 children: [
                   const Text(
                     'Showing 1 to 5 of 12',
-                    style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   Row(
                     children: [
@@ -62,7 +65,10 @@ class DashboardDailyTasksCard extends StatelessWidget {
                         onPressed: () {},
                       ),
                       IconButton(
-                        icon: Icon(Icons.arrow_forward_ios_rounded, size: 14.sp),
+                        icon: Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14.sp,
+                        ),
                         onPressed: () {},
                       ),
                     ],

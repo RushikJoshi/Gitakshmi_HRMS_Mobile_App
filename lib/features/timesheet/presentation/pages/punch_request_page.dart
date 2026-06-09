@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gitakshmi_hrms_app/core/widgets/bottomsheet/app_date_picker.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 
 class PunchRequestScreen extends StatefulWidget {
   final bool isPunchIn;
@@ -13,6 +15,45 @@ class _PunchRequestScreenState extends State<PunchRequestScreen> {
   static const Color headerPurple = Color(0xff7A5AF8);
   static const Color darkText = Color(0xFF111827);
   static const Color labelBlue = Color(0xFF2E63B4);
+
+  DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
+
+  String _formatDate(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  }
+
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return "${hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} $period";
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await AppDatePicker.showSingle(
+      context: context,
+      title: "Select Date",
+      subtitle: "Choose the request date",
+      initialDate: _selectedDate ?? DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime ?? TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,117 +90,132 @@ class _PunchRequestScreenState extends State<PunchRequestScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Date",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: labelBlue,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildDropdownField(Icons.calendar_month_outlined, "Select Date"),
-            const SizedBox(height: 16),
-            
-            const Text(
-              "Time",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: labelBlue,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildDropdownField(Icons.access_time, "Select Time"),
-            const SizedBox(height: 16),
-            
-            const Text(
-              "Reason",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: labelBlue,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              height: 120,
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFD0D5DD)),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const TextField(
-                maxLines: null,
-                decoration: InputDecoration(
-                  hintText: "Type Here",
-                  hintStyle: TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF98A2B3),
-                  ),
-                  prefixIcon: Padding(
-                    padding: EdgeInsets.only(bottom: 70),
-                    child: Icon(Icons.edit_note, color: Color(0xFF667085), size: 20),
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        child: ResponsiveCenteredView(
+          maxWidth: 560,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Date",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: labelBlue,
                 ),
               ),
-            ),
-            const SizedBox(height: 40),
-            
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: headerPurple,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 0,
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _pickDate,
+                child: _buildDropdownField(
+                  Icons.calendar_month_outlined,
+                  _selectedDate != null ? _formatDate(_selectedDate!) : "Select Date",
                 ),
-                child: const Text(
-                  "Submit Request",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+              ),
+              const SizedBox(height: 16),
+              
+              const Text(
+                "Time",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: labelBlue,
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _pickTime,
+                child: _buildDropdownField(
+                  Icons.access_time,
+                  _selectedTime != null ? _formatTime(_selectedTime!) : "Select Time",
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              const Text(
+                "Reason",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: labelBlue,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFD0D5DD)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const TextField(
+                  maxLines: null,
+                  decoration: InputDecoration(
+                    hintText: "Type Here",
+                    hintStyle: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF98A2B3),
+                    ),
+                    prefixIcon: Padding(
+                      padding: EdgeInsets.only(bottom: 70),
+                      child: Icon(Icons.edit_note, color: Color(0xFF667085), size: 20),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: headerPurple),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+              const SizedBox(height: 40),
+              
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: headerPurple,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    elevation: 0,
                   ),
-                ),
-                child: const Text(
-                  "Cancel Request",
-                  style: TextStyle(
-                    color: headerPurple,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                  child: const Text(
+                    "Submit Request",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: headerPurple),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text(
+                    "Cancel Request",
+                    style: TextStyle(
+                      color: headerPurple,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

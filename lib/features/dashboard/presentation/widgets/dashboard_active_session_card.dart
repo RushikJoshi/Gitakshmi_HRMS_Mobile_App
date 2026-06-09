@@ -86,7 +86,10 @@ class DashboardActiveSessionCard extends StatelessWidget {
                             border: Border.all(color: AppColors.primary),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
-                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14.w,
+                            vertical: 6.h,
+                          ),
                           child: const Text(
                             'On Break',
                             style: TextStyle(
@@ -138,7 +141,13 @@ class ActiveSessionProgressPainter extends CustomPainter {
     double sweepAngle = 3.141592653589793 * 1.5;
 
     canvas.drawArc(rect, startAngle, sweepAngle, false, paintTrack);
-    canvas.drawArc(rect, startAngle, sweepAngle * progress, false, paintProgress);
+    canvas.drawArc(
+      rect,
+      startAngle,
+      sweepAngle * progress,
+      false,
+      paintProgress,
+    );
   }
 
   @override

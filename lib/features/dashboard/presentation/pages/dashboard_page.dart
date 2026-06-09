@@ -30,7 +30,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // ── Pages ────────────────────────────────────────────────────────────────
   Widget _buildHomeView(
-      CompanyConfig config, RolePermissionHelper helper, List<String> permissions) {
+    CompanyConfig config,
+    RolePermissionHelper helper,
+    List<String> permissions,
+  ) {
     final activeEmp = helper.activeEmployee;
     final role = helper.roles.firstWhere(
       (r) => r.id == activeEmp.roleId,
@@ -149,14 +152,14 @@ class _DashboardPageState extends State<DashboardPage> {
               canPop: false,
               onPopInvokedWithResult: (bool didPop, Object? result) async {
                 if (didPop) return;
-                
+
                 if (_bottomIndex != 0) {
                   setState(() {
                     _bottomIndex = 0;
                   });
                   return;
                 }
-                
+
                 final bool? shouldExit = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -165,7 +168,10 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     title: const Row(
                       children: [
-                        Icon(Icons.exit_to_app_rounded, color: AppColors.blue600),
+                        Icon(
+                          Icons.exit_to_app_rounded,
+                          color: AppColors.blue600,
+                        ),
                         SizedBox(width: 10),
                         Text(
                           'Exit App',
@@ -230,7 +236,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.blue600,
-
                   ),
                   child: Material(
                     color: Colors.transparent,
