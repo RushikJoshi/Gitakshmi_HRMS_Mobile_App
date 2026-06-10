@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
@@ -88,25 +90,35 @@ class _ProfilePageBodyState extends State<_ProfilePageBody> {
             );
           }
         } else {
+          final isTokenExpired = (state is FaceRegisterError && state.message.contains('token_expired')) ||
+                                 (state is ProfileError && state.message.contains('expired'));
+
           if (_isRegisteringFaceDialogShowing) {
             _isRegisteringFaceDialogShowing = false;
-            Navigator.of(context, rootNavigator: true).pop();
+            if (!isTokenExpired) {
+              final nav = Navigator.of(context, rootNavigator: true);
+              if (nav.canPop()) {
+                nav.pop();
+              }
+            }
           }
 
-          if (state is FaceRegisterSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.green,
-              ),
-            );
-          } else if (state is FaceRegisterError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+          if (!isTokenExpired) {
+            if (state is FaceRegisterSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            } else if (state is FaceRegisterError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           }
         }
       },
@@ -382,18 +394,12 @@ class _ProfilePageBodyState extends State<_ProfilePageBody> {
                                             },
                                           ),
                                           _buildProfileGridCard(
-                                            icon: Icons.bar_chart_rounded,
-                                            title: 'Attendance Stats',
+                                            icon: Icons.portrait_rounded,
+                                            title: 'View Face',
                                             isActive: false,
-                                            onTap: () => _navigateToDetail(
-                                              context,
-                                              category: 'Stats Summary',
-                                              profile: profile,
-                                              isSelf: isSelf,
-                                              isHR: isHR,
-                                              canViewPayroll: canViewPayroll,
-                                              primaryColor: primaryColor,
-                                            ),
+                                            onTap: () {
+                                              _viewRegisteredFace(context, profile);
+                                            },
                                           ),
                                           _buildProfileGridCard(
                                             icon: Icons.timeline_rounded,
@@ -655,6 +661,193 @@ class _ProfilePageBodyState extends State<_ProfilePageBody> {
           },
         ),
       ),
+    );
+  }
+
+  void _viewRegisteredFace(BuildContext context, EmployeeProfileModel profile) {
+    if (profile.faceRegistrationStatus != 'Registered') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please register your face first.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: FutureBuilder<String?>(
+            future: PreferenceManager.getRegisteredFace(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                  height: 200,
+                  padding: const EdgeInsets.all(20),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              final base64Image = snapshot.data;
+              if (base64Image == null || base64Image.trim().isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.amber,
+                        size: 48,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Registered Face Not Found',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Your face is registered on the server, but the image is not stored on this device.\n\nIf you want to view it or use face verification on this device, please register again.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.purple600,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Decode image bytes
+              late final Uint8List bytes;
+              try {
+                bytes = base64Decode(base64Image);
+              } catch (e) {
+                return Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 48,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Error Displaying Face',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Registered Face',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: AppColors.purple100,
+                          width: 4,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.memory(
+                          bytes,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.verified_user_rounded,
+                          color: Colors.green,
+                          size: 18,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Verified Biometric Identity',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

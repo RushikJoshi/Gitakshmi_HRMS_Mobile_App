@@ -493,6 +493,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         employeeId: currentProfile.employeeId.isNotEmpty ? currentProfile.employeeId : 'EMP-UNKNOWN',
       );
 
+      await PreferenceManager.saveRegisteredFace(event.base64Image);
+
       final helper = RolePermissionHelper.instance;
       final activeEmpId = helper.activeEmployeeId;
       final updatedProfile = currentProfile.copyWith(
