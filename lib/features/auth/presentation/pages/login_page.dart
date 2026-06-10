@@ -5,6 +5,7 @@ import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/phone_sign_in_page.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/signup_page.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/employee_sign_in_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -199,45 +200,61 @@ class _LoginPageState extends State<LoginPage> {
                 _outlineButton(
                   text: "Sign in With Employee ID",
                   icon: Icons.badge_outlined,
-                ),
-                SizedBox(height: _responsiveGap(14)),
-                _outlineButton(
-                  text: "Sign in With Phone",
-                  icon: Icons.phone_rounded,
-                ),
-                SizedBox(height: _responsiveGap(34)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Don’t have an account? ",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EmployeeSignInPage(),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SignUpScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        "Sign Up Here",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryPurple,
-                        ),
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-                SizedBox(height: _responsiveGap(16)),
+                // SizedBox(height: _responsiveGap(14)),
+                // _outlineButton(
+                //   text: "Sign in With Phone",
+                //   icon: Icons.phone_rounded,
+                //   onPressed: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) => const PhoneSignInScreen(),
+                //       ),
+                //     );
+                //   },
+                // ),
+                // SizedBox(height: _responsiveGap(34)),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.center,
+                //   children: [
+                //     const Text(
+                //       "Don’t have an account? ",
+                //       style: TextStyle(
+                //         fontSize: 14,
+                //         fontWeight: FontWeight.w500,
+                //         color: AppColors.textSecondary,
+                //       ),
+                //     ),
+                //     GestureDetector(
+                //       onTap: () {
+                //         Navigator.push(
+                //           context,
+                //           MaterialPageRoute(
+                //             builder: (context) => const SignUpScreen(),
+                //           ),
+                //         );
+                //       },
+                //       child: const Text(
+                //         "Sign Up Here",
+                //         style: TextStyle(
+                //           fontSize: 14,
+                //           fontWeight: FontWeight.bold,
+                //           color: AppColors.primaryPurple,
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
+                // SizedBox(height: _responsiveGap(16)),
               ],
             ),
           ),
@@ -397,19 +414,13 @@ class _LoginPageState extends State<LoginPage> {
   Widget _outlineButton({
     required String text,
     required IconData icon,
+    required VoidCallback onPressed,
   }) {
     return SizedBox(
       height: 48,
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const PhoneSignInScreen(),
-            ),
-          );
-        },
+        onPressed: onPressed,
         icon: Icon(
           icon,
           color: AppColors.primaryPurple,

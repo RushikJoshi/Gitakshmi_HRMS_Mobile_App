@@ -34,14 +34,12 @@ class LeaveSubmittedCard extends StatelessWidget {
         statusText: "Approved at 19 Sept 2024",
         statusColor: const Color(0xFF12B76A),
         statusIcon: Icons.check_circle,
-        minHeight: dynamicMinHeight,
       );
     } else {
       return _leaveStatusCard(
         statusText: "Rejected at 19 Sept 2024",
         statusColor: const Color(0xFFF04438),
         statusIcon: Icons.cancel,
-        minHeight: dynamicMinHeight,
       );
     }
   }
@@ -193,14 +191,9 @@ class LeaveSubmittedCard extends StatelessWidget {
     required String statusText,
     required Color statusColor,
     required IconData statusIcon,
-    required double minHeight,
   }) {
-    // Spacer height to separate form details and status row towards the bottom of the card
-    final double spacerHeight = (minHeight - 170) > 20 ? (minHeight - 170) : 20.0;
-
     return Container(
       width: double.infinity,
-      constraints: BoxConstraints(minHeight: minHeight),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -256,7 +249,7 @@ class LeaveSubmittedCard extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: spacerHeight),
+          const SizedBox(height: 14),
           Row(
             children: [
               Icon(statusIcon, color: statusColor, size: 15),
