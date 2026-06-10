@@ -13,4 +13,8 @@ abstract class ApiClient {
     "Origin": "https://hrms.gitakshmi.com",
   })
   Future<dynamic> login(@Body() Map<String, dynamic> body);
+
+  @GET(ApiEndpoints.payslips)
+  Future<dynamic> getPayslips(@Header('Authorization') String token);
 }
+

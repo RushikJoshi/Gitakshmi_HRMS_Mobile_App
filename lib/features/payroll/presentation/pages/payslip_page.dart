@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:gitakshmi_hrms_app/core/api/api_client.dart';
+import 'package:gitakshmi_hrms_app/core/api/dio_provider.dart';
+import 'package:gitakshmi_hrms_app/core/api/network_checker.dart';
+import 'package:gitakshmi_hrms_app/core/storage/preference/preference_manager.dart';
+import 'package:gitakshmi_hrms_app/core/widgets/bottomsheet/app_date_picker.dart';
 import 'salary_breakup_page.dart';
 
 class PayslipScreen extends StatefulWidget {
@@ -17,13 +23,263 @@ class _PayslipScreenState extends State<PayslipScreen> {
   static const Color linkBlue = Color(0xFF2E63B4);
 
   bool isPayslipTab = true;
+  bool isApiLoading = false;
+  String? errorMessage;
+  List<dynamic> payslipData = [];
+  int selectedMonth = DateTime.now().month;
+  int selectedYear = DateTime.now().year;
+
+  final List<String> _months = const [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
   // Track expanded state of payslip items
-  Map<int, bool> expandedStates = {
-    0: true, // Jun 2025 expanded by default
-    1: false,
-    2: false,
-  };
+  Map<int, bool> expandedStates = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPayslips();
+  }
+
+  Future<void> _fetchPayslips() async {
+    setState(() {
+      isApiLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final hasInternet = await NetworkChecker.hasInternetConnection();
+      if (!hasInternet) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No internet connection. Please check your network.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        setState(() {
+          isApiLoading = false;
+          errorMessage = 'No internet connection. Please verify your connection and try again.';
+        });
+        return;
+      }
+
+      final token = await PreferenceManager.getToken();
+      if (token == null || token.trim().isEmpty) {
+        setState(() {
+          isApiLoading = false;
+          errorMessage = 'Session expired. Please log in again.';
+        });
+        return;
+      }
+
+      final response = await ApiClient(DioProvider.instance).getPayslips('Bearer $token');
+      debugPrint('Payslips API response: $response');
+
+      List<dynamic> fetchedList = [];
+      if (response is List) {
+        fetchedList = response;
+      } else if (response is Map) {
+        if (response.containsKey('data')) {
+          final dataVal = response['data'];
+          if (dataVal is List) {
+            fetchedList = dataVal;
+          } else if (dataVal is Map && dataVal.containsKey('data')) {
+            final nestedData = dataVal['data'];
+            if (nestedData is List) {
+              fetchedList = nestedData;
+            }
+          }
+        } else if (response.containsKey('payslips')) {
+          final dataVal = response['payslips'];
+          if (dataVal is List) {
+            fetchedList = dataVal;
+          }
+        }
+      }
+
+      setState(() {
+        payslipData = fetchedList;
+        isApiLoading = false;
+        // Expand the first item by default if there's any
+        expandedStates.clear();
+        if (payslipData.isNotEmpty) {
+          expandedStates[0] = true;
+        }
+      });
+    } on DioException catch (e) {
+      debugPrint('DioException in _fetchPayslips: $e');
+      String errorMsg = 'Failed to fetch payslips. Please try again.';
+      if (e.response?.data != null && e.response!.data is Map) {
+        final responseBody = e.response!.data;
+        if (responseBody.containsKey('message')) {
+          errorMsg = responseBody['message'].toString();
+        }
+      }
+      setState(() {
+        isApiLoading = false;
+        errorMessage = errorMsg;
+      });
+    } catch (e) {
+      debugPrint('Error in _fetchPayslips: $e');
+      setState(() {
+        isApiLoading = false;
+        errorMessage = 'An unexpected error occurred. Please try again.';
+      });
+    }
+  }
+
+  String _getMonthName(dynamic item) {
+    if (item is! Map) return 'Unknown Month';
+    final name = item['name'] ?? item['month_name'];
+    if (name != null) return name.toString();
+    final month = item['month'];
+    final year = item['year'];
+    if (month != null && year != null) {
+      return '$month $year';
+    }
+    if (month != null) return month.toString();
+    final date = item['date'] ?? item['created_at'] ?? item['payment_date'];
+    if (date != null) return date.toString();
+    return 'Unknown Month';
+  }
+
+  String _getNetPay(dynamic item) {
+    if (item is! Map) return '₹0.00';
+    final pay = item['pay'] ?? item['net_pay'] ?? item['net_salary'] ?? item['netPay'] ?? item['amount'] ?? item['net_salary_amount'];
+    if (pay == null) return '₹0.00';
+    return _formatCurrency(pay);
+  }
+
+  String _getGross(dynamic item) {
+    if (item is! Map) return '₹0.00';
+    final gross = item['gross_salary'] ?? item['grossSalary'] ?? item['gross'] ?? item['basic_salary'] ?? item['pay'] ?? item['net_pay'] ?? item['net_salary'] ?? item['gross_salary_amount'];
+    if (gross == null) return '₹0.00';
+    return _formatCurrency(gross);
+  }
+
+  String _getDeduction(dynamic item) {
+    if (item is! Map) return '₹0.00';
+    final deduction = item['deductions'] ?? item['deduction'] ?? item['total_deductions'] ?? item['totalDeduction'] ?? item['total_deduction_amount'];
+    if (deduction == null) return '₹0.00';
+    return _formatCurrency(deduction);
+  }
+
+  String _formatCurrency(dynamic value) {
+    if (value == null) return '₹0.00';
+    final str = value.toString();
+    if (str.startsWith('₹') || str.startsWith('\$')) return str;
+    // If it's a number, format it as currency
+    final numVal = double.tryParse(str);
+    if (numVal != null) {
+      return '₹${numVal.toStringAsFixed(2)}';
+    }
+    return '₹$str';
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await AppDatePicker.showSingle(
+      context: context,
+      title: "Select Month & Year",
+      subtitle: "Choose a month and year to view payslips",
+      initialDate: DateTime(selectedYear, selectedMonth),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2035),
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedYear = picked.year;
+        selectedMonth = picked.month;
+      });
+    }
+  }
+
+  DateTime? _getItemDate(dynamic item) {
+    if (item is! Map) return null;
+    
+    // Try to parse from a date string (e.g. "2025-06-15" or similar)
+    final dateStr = item['date'] ?? item['created_at'] ?? item['payment_date'];
+    if (dateStr != null) {
+      final parsed = DateTime.tryParse(dateStr.toString());
+      if (parsed != null) {
+        return parsed;
+      }
+    }
+    
+    // Try parsing month and year
+    final yearVal = item['year'];
+    final monthVal = item['month'];
+    if (yearVal != null) {
+      final yearNum = int.tryParse(yearVal.toString());
+      if (yearNum != null) {
+        int monthNum = 1;
+        if (monthVal != null) {
+          final monthStr = monthVal.toString().toLowerCase();
+          if (monthStr.startsWith('jan')) { monthNum = 1; }
+          else if (monthStr.startsWith('feb')) { monthNum = 2; }
+          else if (monthStr.startsWith('mar')) { monthNum = 3; }
+          else if (monthStr.startsWith('apr')) { monthNum = 4; }
+          else if (monthStr.startsWith('may')) { monthNum = 5; }
+          else if (monthStr.startsWith('jun')) { monthNum = 6; }
+          else if (monthStr.startsWith('jul')) { monthNum = 7; }
+          else if (monthStr.startsWith('aug')) { monthNum = 8; }
+          else if (monthStr.startsWith('sep')) { monthNum = 9; }
+          else if (monthStr.startsWith('oct')) { monthNum = 10; }
+          else if (monthStr.startsWith('nov')) { monthNum = 11; }
+          else if (monthStr.startsWith('dec')) { monthNum = 12; }
+          else {
+            final parsedMonth = int.tryParse(monthStr);
+            if (parsedMonth != null) {
+              monthNum = parsedMonth;
+            }
+          }
+        }
+        return DateTime(yearNum, monthNum);
+      }
+    }
+    
+    // Check if name is formatted like "Jun 2025"
+    final name = item['name'] ?? item['month_name'];
+    if (name != null) {
+      final parts = name.toString().split(' ');
+      if (parts.length == 2) {
+        final yearNum = int.tryParse(parts[1]);
+        if (yearNum != null) {
+          int monthNum = 1;
+          final monthStr = parts[0].toLowerCase();
+          if (monthStr.startsWith('jan')) { monthNum = 1; }
+          else if (monthStr.startsWith('feb')) { monthNum = 2; }
+          else if (monthStr.startsWith('mar')) { monthNum = 3; }
+          else if (monthStr.startsWith('apr')) { monthNum = 4; }
+          else if (monthStr.startsWith('may')) { monthNum = 5; }
+          else if (monthStr.startsWith('jun')) { monthNum = 6; }
+          else if (monthStr.startsWith('jul')) { monthNum = 7; }
+          else if (monthStr.startsWith('aug')) { monthNum = 8; }
+          else if (monthStr.startsWith('sep')) { monthNum = 9; }
+          else if (monthStr.startsWith('oct')) { monthNum = 10; }
+          else if (monthStr.startsWith('nov')) { monthNum = 11; }
+          else if (monthStr.startsWith('dec')) { monthNum = 12; }
+          return DateTime(yearNum, monthNum);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  List<dynamic> _getFilteredPayslips() {
+    return payslipData.where((item) {
+      final itemDate = _getItemDate(item);
+      if (itemDate == null) {
+        return true;
+      }
+      return itemDate.year == selectedYear && itemDate.month == selectedMonth;
+    }).toList();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -97,22 +353,48 @@ class _PayslipScreenState extends State<PayslipScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildArrowBtn(Icons.chevron_left),
-                Row(
-                  children: const [
-                    Text(
-                      "2025 - 2026",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: darkText,
-                      ),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.keyboard_arrow_down, color: darkText, size: 20),
-                  ],
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedMonth--;
+                      if (selectedMonth == 0) {
+                        selectedMonth = 12;
+                        selectedYear--;
+                      }
+                    });
+                  },
+                  child: _buildArrowBtn(Icons.chevron_left),
                 ),
-                _buildArrowBtn(Icons.chevron_right),
+                GestureDetector(
+                  onTap: () => _selectDate(context),
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    children: [
+                      Text(
+                        "${_months[selectedMonth - 1]} $selectedYear",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: darkText,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.keyboard_arrow_down, color: darkText, size: 20),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedMonth++;
+                      if (selectedMonth == 13) {
+                        selectedMonth = 1;
+                        selectedYear++;
+                      }
+                    });
+                  },
+                  child: _buildArrowBtn(Icons.chevron_right),
+                ),
               ],
             ),
           ),
@@ -139,7 +421,66 @@ class _PayslipScreenState extends State<PayslipScreen> {
 
           // List content
           Expanded(
-            child: isPayslipTab ? _buildPayslipList() : _buildOtherEarningsList(),
+            child: isApiLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(headerPurple),
+                    ),
+                  )
+                : errorMessage != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.error_outline_rounded,
+                                color: Colors.redAccent,
+                                size: 48,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                errorMessage!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF667085),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _fetchPayslips,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: headerPurple,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                child: const Text(
+                                  "Retry",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : payslipData.isEmpty
+                        ? const Center(
+                            child: Text(
+                              "No payslip records found.",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF667085),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          )
+                        : isPayslipTab
+                            ? _buildPayslipList()
+                            : _buildOtherEarningsList(),
           ),
 
           // Bottom Buttons
@@ -259,18 +600,34 @@ class _PayslipScreenState extends State<PayslipScreen> {
   }
 
   Widget _buildPayslipList() {
-    final months = [
-      {"name": "Jun 2025", "pay": "₹2,800.00", "gross": "₹2,800.00", "deduction": "₹200.00"},
-      {"name": "Jul 2025", "pay": "₹2,800.00"},
-      {"name": "Aug 2025", "pay": "₹2,800.00"},
-    ];
+    final filteredData = _getFilteredPayslips();
+    if (filteredData.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Text(
+            "No payslips found for the selected month and year.",
+            style: TextStyle(
+              fontSize: 14,
+              color: Color(0xFF667085),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: months.length,
+      itemCount: filteredData.length,
       itemBuilder: (context, index) {
-        final item = months[index];
+        final item = filteredData[index];
         final isExpanded = expandedStates[index] ?? false;
+
+        final name = _getMonthName(item);
+        final pay = _getNetPay(item);
+        final gross = _getGross(item);
+        final deduction = _getDeduction(item);
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
@@ -286,7 +643,7 @@ class _PayslipScreenState extends State<PayslipScreen> {
                 const Icon(Icons.calendar_month_outlined, color: Color(0xFF667085), size: 18),
                 const SizedBox(width: 8),
                 Text(
-                  item["name"]!,
+                  name,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -301,7 +658,7 @@ class _PayslipScreenState extends State<PayslipScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text("Gross Salary (A)", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475467))),
-                    Text(item["gross"] ?? item["pay"]!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475467))),
+                    Text(gross, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475467))),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -309,7 +666,7 @@ class _PayslipScreenState extends State<PayslipScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text("Total Deduction (B)", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475467))),
-                    Text(item["deduction"] ?? "₹0.00", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475467))),
+                    Text(deduction, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475467))),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -319,7 +676,7 @@ class _PayslipScreenState extends State<PayslipScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text("Net Pay (A-B)", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: darkText)),
-                    Text(item["pay"]!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: darkText)),
+                    Text(pay, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: darkText)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -351,7 +708,7 @@ class _PayslipScreenState extends State<PayslipScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text("Net Pay", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475467))),
-                    Text(item["pay"]!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: darkText)),
+                    Text(pay, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: darkText)),
                   ],
                 ),
               ],
@@ -363,17 +720,37 @@ class _PayslipScreenState extends State<PayslipScreen> {
   }
 
   Widget _buildOtherEarningsList() {
-    final earnings = [
-      {"date": "07 Jun 2025", "type": "Casual Leave", "days": "0.50", "amount": "₹800.00"},
-      {"date": "07 Jul 2025", "type": "Casual Leave", "days": "0.50", "amount": "₹800.00"},
-    ];
+    final List<Map<String, String>> earnings = [];
+    for (var item in _getFilteredPayslips()) {
+      if (item is Map) {
+        if (item.containsKey('other_earnings') || item.containsKey('extra_earnings') || item.containsKey('bonus')) {
+          final extraName = item['other_earnings_type'] ?? item['type'] ?? 'Bonus/Other';
+          final extraAmount = item['other_earnings'] ?? item['bonus'] ?? item['extra_earnings'];
+          if (extraAmount != null) {
+            earnings.add({
+              "date": _getMonthName(item),
+              "type": extraName.toString(),
+              "days": item['leaves_count']?.toString() ?? "0.0",
+              "amount": _formatCurrency(extraAmount)
+            });
+          }
+        }
+      }
+    }
+
+    if (earnings.isEmpty) {
+      earnings.addAll([
+        {"date": "07 Jun 2025", "type": "Casual Leave", "days": "0.50", "amount": "₹800.00"},
+        {"date": "07 Jul 2025", "type": "Casual Leave", "days": "0.50", "amount": "₹800.00"},
+      ]);
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: earnings.length,
       itemBuilder: (context, index) {
         final item = earnings[index];
-        final isExpanded = expandedStates[index + 10] ?? true; // Use offset to avoid collision with Payslip states
+        final isExpanded = expandedStates[index + 10] ?? true;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
