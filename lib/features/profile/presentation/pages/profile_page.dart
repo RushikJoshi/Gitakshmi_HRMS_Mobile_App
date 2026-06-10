@@ -3,6 +3,8 @@ import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
 import 'package:gitakshmi_hrms_app/features/profile/presentation/pages/profile_detail_page.dart';
+import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/login_page.dart';
+import 'package:gitakshmi_hrms_app/core/storage/preference/preference_manager.dart';
 
 class ProfilePage extends StatefulWidget {
   final String? employeeId;
@@ -267,6 +269,54 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                     ),
                                   ],
+                                ),
+                                const SizedBox(height: 24),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red.shade600,
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size(double.infinity, 48),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  onPressed: () async {
+                                    final confirmed = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Logout'),
+                                        content: const Text('Are you sure you want to logout?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context, false),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context, true),
+                                            child: const Text('Logout', style: TextStyle(color: Colors.red)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                    if (confirmed == true) {
+                                      await PreferenceManager.clearToken();
+                                      if (!context.mounted) return;
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                                        (route) => false,
+                                      );
+                                    }
+                                  },
+                                  icon: const Icon(Icons.logout_rounded),
+                                  label: const Text(
+                                    'Logout',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                                 const SizedBox(height: 40),
                               ],

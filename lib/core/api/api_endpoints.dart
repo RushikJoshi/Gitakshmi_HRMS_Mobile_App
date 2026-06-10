@@ -1,2 +1,6 @@
-// Class placeholder: ApiEndpoints
-class ApiEndpoints {}
+import 'package:gitakshmi_hrms_app/core/api/api_constants.dart';
+
+class ApiEndpoints {
+  static const String baseUrl = ApiConstants.baseUrl;
+  static const String login = ApiConstants.login;
+}

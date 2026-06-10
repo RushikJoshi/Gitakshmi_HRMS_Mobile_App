@@ -3,9 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/login_page.dart';
-import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/phone_sign_in_page.dart';
-import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/signup_page.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:gitakshmi_hrms_app/core/api/api_client.dart';
+import 'package:gitakshmi_hrms_app/core/api/dio_provider.dart';
+import 'package:gitakshmi_hrms_app/core/api/network_checker.dart';
+import 'package:gitakshmi_hrms_app/core/storage/preference/preference_manager.dart';
+import 'package:dio/dio.dart';
 
 class EmployeeSignInPage extends StatefulWidget {
   const EmployeeSignInPage({super.key});
@@ -21,11 +24,13 @@ class _EmployeeSignInPageState extends State<EmployeeSignInPage> {
   bool isEmployeeIdHide = false;
   bool isPasswordHide = true;
   bool rememberMe = false;
+  bool isLoading = false;
 
   String? employeeIdError;
   String? passwordError;
 
-  void validateLogin() {
+  Future<void> validateLogin() async {
+    if (isLoading) return;
     setState(() {
       employeeIdError = null;
       passwordError = null;
@@ -42,10 +47,83 @@ class _EmployeeSignInPageState extends State<EmployeeSignInPage> {
     });
 
     if (employeeIdError == null && passwordError == null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
-      );
+      setState(() {
+        isLoading = true;
+      });
+      try {
+        final hasInternet = await NetworkChecker.hasInternetConnection();
+        if (!hasInternet) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No internet connection. Please check your network.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          setState(() => isLoading = false);
+          return;
+        }
+        final response = await ApiClient(DioProvider.instance).login({
+          'identifier': employeeIdController.text.trim(),
+          'password': passwordController.text.trim(),
+        });
+
+        String? token;
+        if (response.containsKey('token')) {
+          token = response['token']?.toString();
+        } else if (response.containsKey('accessToken')) {
+          token = response['accessToken']?.toString();
+        } else if (response.containsKey('data')) {
+          final data = response['data'];
+          if (data is Map) {
+            token = (data['token'] ?? data['accessToken'] ?? data['token_type'])?.toString();
+          }
+        }
+
+        if (token != null) {
+          await PreferenceManager.saveToken(token);
+        } else {
+          await PreferenceManager.saveToken(response.toString());
+        }
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardPage()),
+        );
+      } on DioException catch (e) {
+        if (!mounted) return;
+        String errorMessage = 'Login failed. Please check your credentials.';
+        if (e.response?.data != null && e.response!.data is Map) {
+          final responseBody = e.response!.data;
+          if (responseBody.containsKey('message')) {
+            errorMessage = responseBody['message'];
+          } else if (responseBody.containsKey('error')) {
+            errorMessage = responseBody['error'];
+          }
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Network error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -393,7 +471,7 @@ class _EmployeeSignInPageState extends State<EmployeeSignInPage> {
       height: 48,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: validateLogin,
+        onPressed: isLoading ? () {} : validateLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryPurple,
           elevation: 0,
@@ -401,14 +479,23 @@ class _EmployeeSignInPageState extends State<EmployeeSignInPage> {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        child: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
   }
