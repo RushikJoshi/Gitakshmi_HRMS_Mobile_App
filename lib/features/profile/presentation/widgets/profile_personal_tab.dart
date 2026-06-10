@@ -302,9 +302,60 @@ class _ProfilePersonalTabState extends State<ProfilePersonalTab> {
           const SizedBox(width: 20),
           Expanded(
             child: Text(
-              value,
+              value.isNotEmpty ? value : '-',
               textAlign: TextAlign.end,
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE4E7EC)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Icon(icon, color: const Color(0xFF7544FC), size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: Color(0xFFF2F4F7)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: children,
             ),
           ),
         ],
@@ -577,29 +628,71 @@ class _ProfilePersonalTabState extends State<ProfilePersonalTab> {
 
     return Column(
       children: [
-        _buildInfoTile('Full Name', '${widget.profile.firstName} ${widget.profile.middleName} ${widget.profile.lastName}'),
-        _buildInfoTile('Gender', widget.profile.gender),
-        _buildInfoTile('Date of Birth', widget.profile.dob),
-        _buildInfoTile('Blood Group', widget.profile.bloodGroup),
-        _buildInfoTile('Marital Status', widget.profile.maritalStatus),
-        _buildInfoTile('Nationality', widget.profile.nationality),
-        _buildInfoTile('Official Email', widget.profile.officialEmail),
-        _buildInfoTile('Personal Email', widget.profile.personalEmail),
-        _buildInfoTile('Mobile Number', widget.profile.mobileNumber),
-        _buildInfoTile('Identity Aadhar No.', widget.profile.aadharNumber),
-        _buildInfoTile('Identity PAN Card', widget.profile.panNumber),
-        _buildInfoTile('Passport Number', widget.profile.passportNumber),
-        _buildInfoTile('Driving License No.', widget.profile.drivingLicenseNumber),
-        _buildInfoTile('Face Scanner Status', widget.profile.faceRegistrationStatus),
-        _buildInfoTile('Biometric ID Register', widget.profile.biometricId),
-        const SizedBox(height: 16),
-        const Align(
-          alignment: Alignment.centerLeft,
-          child: Text('Current Address', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
+        _buildSectionCard(
+          title: 'Basic Details',
+          icon: Icons.person_rounded,
+          children: [
+            _buildInfoTile('Full Name', '${widget.profile.firstName} ${widget.profile.middleName.isNotEmpty ? '${widget.profile.middleName} ' : ''}${widget.profile.lastName}'),
+            _buildInfoTile('Gender', widget.profile.gender),
+            _buildInfoTile('Date of Birth', widget.profile.dob),
+            _buildInfoTile('Blood Group', widget.profile.bloodGroup),
+            _buildInfoTile('Marital Status', widget.profile.maritalStatus),
+            _buildInfoTile('Religion', widget.profile.religion),
+            _buildInfoTile('Nationality', widget.profile.nationality),
+          ],
         ),
-        _buildInfoTile('Address Line', '${widget.profile.addressDetails.currentLine1}, ${widget.profile.addressDetails.currentLine2}'),
-        _buildInfoTile('City / Pincode', '${widget.profile.addressDetails.currentCity} - ${widget.profile.addressDetails.currentPincode}'),
-        _buildInfoTile('State / Country', '${widget.profile.addressDetails.currentState}, ${widget.profile.addressDetails.currentCountry}'),
+        _buildSectionCard(
+          title: 'Contact Details',
+          icon: Icons.contact_mail_rounded,
+          children: [
+            _buildInfoTile('Official Email', widget.profile.officialEmail),
+            _buildInfoTile('Personal Email', widget.profile.personalEmail),
+            _buildInfoTile('Mobile Number', widget.profile.mobileNumber),
+            _buildInfoTile('Alternate Mobile', widget.profile.alternateMobile),
+          ],
+        ),
+        _buildSectionCard(
+          title: 'Identity Documents',
+          icon: Icons.badge_rounded,
+          children: [
+            _buildInfoTile('Identity Aadhar No.', widget.profile.aadharNumber),
+            _buildInfoTile('Identity PAN Card', widget.profile.panNumber),
+            _buildInfoTile('Passport Number', widget.profile.passportNumber),
+            _buildInfoTile('Driving License No.', widget.profile.drivingLicenseNumber),
+          ],
+        ),
+        _buildSectionCard(
+          title: 'Biometric Info',
+          icon: Icons.fingerprint_rounded,
+          children: [
+            _buildInfoTile('Face Scanner Status', widget.profile.faceRegistrationStatus),
+            _buildInfoTile('Biometric ID Register', widget.profile.biometricId),
+          ],
+        ),
+        _buildSectionCard(
+          title: 'Current Address',
+          icon: Icons.home_rounded,
+          children: [
+            _buildInfoTile('Address Line 1', widget.profile.addressDetails.currentLine1),
+            _buildInfoTile('Address Line 2', widget.profile.addressDetails.currentLine2),
+            _buildInfoTile('City', widget.profile.addressDetails.currentCity),
+            _buildInfoTile('Pincode', widget.profile.addressDetails.currentPincode),
+            _buildInfoTile('State', widget.profile.addressDetails.currentState),
+            _buildInfoTile('Country', widget.profile.addressDetails.currentCountry),
+          ],
+        ),
+        _buildSectionCard(
+          title: 'Permanent Address',
+          icon: Icons.location_on_rounded,
+          children: [
+            _buildInfoTile('Address Line 1', widget.profile.addressDetails.permanentLine1),
+            _buildInfoTile('Address Line 2', widget.profile.addressDetails.permanentLine2),
+            _buildInfoTile('City', widget.profile.addressDetails.permanentCity),
+            _buildInfoTile('Pincode', widget.profile.addressDetails.permanentPincode),
+            _buildInfoTile('State', widget.profile.addressDetails.permanentState),
+            _buildInfoTile('Country', widget.profile.addressDetails.permanentCountry),
+          ],
+        ),
       ],
     );
   }

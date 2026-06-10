@@ -16,15 +16,34 @@ import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashb
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_work_hours_card.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_daily_tasks_card.dart';
 import 'package:gitakshmi_hrms_app/features/dashboard/presentation/widgets/dashboard_log_timeline_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gitakshmi_hrms_app/features/profile/profile_injection.dart';
+import 'package:gitakshmi_hrms_app/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:gitakshmi_hrms_app/features/profile/presentation/bloc/profile_event.dart';
+import 'package:gitakshmi_hrms_app/features/profile/presentation/bloc/profile_state.dart';
+import 'package:gitakshmi_hrms_app/core/widgets/shimmer/shimmer_widget.dart';
 
-class DashboardPage extends StatefulWidget {
+class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
-  State<DashboardPage> createState() => _DashboardPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider<ProfileBloc>(
+      create: (context) => ProfileBloc(repository: profileRepository)
+        ..add(const FetchProfileEvent()),
+      child: _DashboardPageBody(key: key),
+    );
+  }
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class _DashboardPageBody extends StatefulWidget {
+  const _DashboardPageBody({super.key});
+
+  @override
+  State<_DashboardPageBody> createState() => _DashboardPageBodyState();
+}
+
+class _DashboardPageBodyState extends State<_DashboardPageBody> {
   int _bottomIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -80,6 +99,183 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  // ── Shimmer Dashboard View ──────────────────────────────────────────────
+  Widget _buildShimmerDashboardLayout(CompanyConfig config) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      child: ResponsiveCenteredView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header Shimmer
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  height: 180.h,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [config.primaryColor, config.primaryColor.withValues(alpha: 0.8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30.r),
+                      bottomRight: Radius.circular(30.r),
+                    ),
+                  ),
+                  padding: EdgeInsets.fromLTRB(20.w, 40.h, 20.w, 20.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const ShimmerWidget.circular(width: 46, height: 46),
+                          SizedBox(width: 12.w),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ShimmerWidget.rectangular(height: 16, width: 100),
+                              SizedBox(height: 6),
+                              ShimmerWidget.rectangular(height: 12, width: 80),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 140.h,
+                  left: 0,
+                  right: 0,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 80.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Center(child: ShimmerWidget.rectangular(height: 20, width: 60)),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Container(
+                            height: 80.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Center(child: ShimmerWidget.rectangular(height: 20, width: 60)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 130.h),
+            // Punch Card Shimmer
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Container(
+                height: 150.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.all(16.w),
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ShimmerWidget.rectangular(height: 16, width: 80),
+                        ShimmerWidget.rectangular(height: 16, width: 60),
+                      ],
+                    ),
+                    ShimmerWidget.rectangular(height: 40, width: double.infinity),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ShimmerWidget.rectangular(height: 12, width: 60),
+                        ShimmerWidget.rectangular(height: 12, width: 60),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            // Active Session Card Shimmer
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Container(
+                height: 100.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.all(16.w),
+                child: const Row(
+                  children: [
+                    ShimmerWidget.circular(width: 40, height: 40),
+                    SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ShimmerWidget.rectangular(height: 14, width: 120),
+                        SizedBox(height: 6),
+                        ShimmerWidget.rectangular(height: 10, width: 80),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── Custom Nav Item ──────────────────────────────────────────────────────
   Widget _buildNavItem({
     required int index,
@@ -125,184 +321,189 @@ class _DashboardPageState extends State<DashboardPage> {
     return ValueListenableBuilder<CompanyConfig>(
       valueListenable: SaaSBrandingHelper.instance.configNotifier,
       builder: (context, config, child) {
-        return AnimatedBuilder(
-          animation: Listenable.merge([
-            SaaSBrandingHelper.instance.configNotifier,
-            helper,
-          ]),
-          builder: (context, _) {
-            final primaryColor = config.primaryColor;
-            final activeEmp = helper.activeEmployee;
-            final permissions = helper.getFinalPermissions(activeEmp.id);
+        return BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            return AnimatedBuilder(
+              animation: Listenable.merge([
+                SaaSBrandingHelper.instance.configNotifier,
+                helper,
+              ]),
+              builder: (context, _) {
+                final activeEmp = helper.activeEmployee;
+                final permissions = helper.getFinalPermissions(activeEmp.id);
 
-            // 4 pages: Home | Approvals | Notifications | Profile
-            final List<Widget> pages = [
-              _buildHomeView(config, helper, permissions),
-              const ApprovalsPage(),
-              const NotificationPage(),
-              const ProfilePage(),
-            ];
+                // 4 pages: Home | Approvals | Notifications | Profile
+                final List<Widget> pages = [
+                  (state is ProfileInitial || state is ProfileLoading)
+                      ? _buildShimmerDashboardLayout(config)
+                      : _buildHomeView(config, helper, permissions),
+                  const ApprovalsPage(),
+                  const NotificationPage(),
+                  const ProfilePage(),
+                ];
 
-            if (_bottomIndex >= pages.length) _bottomIndex = 0;
+                if (_bottomIndex >= pages.length) _bottomIndex = 0;
 
-            // Nav bar dark navy color (matching screenshot)
-            const navActiveColor = AppColors.blue600;
+                // Nav bar dark navy color (matching screenshot)
+                const navActiveColor = AppColors.blue600;
 
-            return PopScope(
-              canPop: false,
-              onPopInvokedWithResult: (bool didPop, Object? result) async {
-                if (didPop) return;
+                return PopScope(
+                  canPop: false,
+                  onPopInvokedWithResult: (bool didPop, Object? result) async {
+                    if (didPop) return;
 
-                if (_bottomIndex != 0) {
-                  setState(() {
-                    _bottomIndex = 0;
-                  });
-                  return;
-                }
+                    if (_bottomIndex != 0) {
+                      setState(() {
+                        _bottomIndex = 0;
+                      });
+                      return;
+                    }
 
-                final bool? shouldExit = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                    title: const Row(
-                      children: [
-                        Icon(
-                          Icons.exit_to_app_rounded,
-                          color: AppColors.blue600,
+                    final bool? shouldExit = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.r),
                         ),
-                        SizedBox(width: 10),
-                        Text(
-                          'Exit App',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        title: const Row(
+                          children: [
+                            Icon(
+                              Icons.exit_to_app_rounded,
+                              color: AppColors.blue600,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'Exit App',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    content: const Text(
-                      'Are you sure you want to exit the app?',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text(
-                          'No',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w600,
+                        content: const Text(
+                          'Are you sure you want to exit the app?',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: Text(
+                              'No',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                        ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.blue600,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text(
+                              'Yes',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.blue600,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                        ),
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text(
-                          'Yes',
-                          style: TextStyle(
+                    );
+
+                    if (shouldExit == true) {
+                      await SystemNavigator.pop();
+                    }
+                  },
+                  child: Scaffold(
+                    key: _scaffoldKey,
+                    backgroundColor: AppColors.scaffoldBg,
+                    drawer: DashboardDrawer(
+                      config: config,
+                      helper: helper,
+                      activeEmp: activeEmp,
+                      permissions: permissions,
+                    ),
+                    body: pages[_bottomIndex],
+
+                    // ── Center FAB (notched circular button) ──────────────────
+                    floatingActionButton: Container(
+                      width: 58.w,
+                      height: 58.w,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.blue600,
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                          child: const Icon(
+                            Icons.grid_view_rounded,
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            size: 26,
                           ),
                         ),
                       ),
-                    ],
+                    ),
+                    floatingActionButtonLocation:
+                        FloatingActionButtonLocation.centerDocked,
+
+                    // ── Custom Notched Bottom Nav Bar ─────────────────────────
+                    bottomNavigationBar: BottomAppBar(
+                      shape: const CircularNotchedRectangle(),
+                      notchMargin: 8.r,
+                      color: Colors.white,
+                      elevation: 12,
+                      padding: EdgeInsets.zero,
+                      child: SizedBox(
+                        height: 60.h,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // Left side
+                            _buildNavItem(
+                              index: 0,
+                              activeIcon: Icons.home_rounded,
+                              inactiveIcon: Icons.home_outlined,
+                              label: 'Home',
+                              activeColor: navActiveColor,
+                            ),
+                            _buildNavItem(
+                              index: 1,
+                              activeIcon: Icons.assignment_turned_in_rounded,
+                              inactiveIcon: Icons.assignment_turned_in_outlined,
+                              label: 'Approvals',
+                              activeColor: navActiveColor,
+                            ),
+                            // Space for FAB
+                            SizedBox(width: 58.w),
+                            // Right side
+                            _buildNavItem(
+                              index: 2,
+                              activeIcon: Icons.notifications_rounded,
+                              inactiveIcon: Icons.notifications_outlined,
+                              label: 'Alerts',
+                              activeColor: navActiveColor,
+                            ),
+                            _buildNavItem(
+                              index: 3,
+                              activeIcon: Icons.person_rounded,
+                              inactiveIcon: Icons.person_outlined,
+                              label: 'Profile',
+                              activeColor: navActiveColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 );
-
-                if (shouldExit == true) {
-                  await SystemNavigator.pop();
-                }
               },
-              child: Scaffold(
-                key: _scaffoldKey,
-                backgroundColor: AppColors.scaffoldBg,
-                drawer: DashboardDrawer(
-                  config: config,
-                  helper: helper,
-                  activeEmp: activeEmp,
-                  permissions: permissions,
-                ),
-                body: pages[_bottomIndex],
-
-                // ── Center FAB (notched circular button) ──────────────────
-                floatingActionButton: Container(
-                  width: 58.w,
-                  height: 58.w,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.blue600,
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      onTap: () => _scaffoldKey.currentState?.openDrawer(),
-                      child: const Icon(
-                        Icons.grid_view_rounded,
-                        color: Colors.white,
-                        size: 26,
-                      ),
-                    ),
-                  ),
-                ),
-                floatingActionButtonLocation:
-                    FloatingActionButtonLocation.centerDocked,
-
-                // ── Custom Notched Bottom Nav Bar ─────────────────────────
-                bottomNavigationBar: BottomAppBar(
-                  shape: const CircularNotchedRectangle(),
-                  notchMargin: 8.r,
-                  color: Colors.white,
-                  elevation: 12,
-                  padding: EdgeInsets.zero,
-                  child: SizedBox(
-                    height: 60.h,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        // Left side
-                        _buildNavItem(
-                          index: 0,
-                          activeIcon: Icons.home_rounded,
-                          inactiveIcon: Icons.home_outlined,
-                          label: 'Home',
-                          activeColor: navActiveColor,
-                        ),
-                        _buildNavItem(
-                          index: 1,
-                          activeIcon: Icons.assignment_turned_in_rounded,
-                          inactiveIcon: Icons.assignment_turned_in_outlined,
-                          label: 'Approvals',
-                          activeColor: navActiveColor,
-                        ),
-                        // Space for FAB
-                        SizedBox(width: 58.w),
-                        // Right side
-                        _buildNavItem(
-                          index: 2,
-                          activeIcon: Icons.notifications_rounded,
-                          inactiveIcon: Icons.notifications_outlined,
-                          label: 'Alerts',
-                          activeColor: navActiveColor,
-                        ),
-                        _buildNavItem(
-                          index: 3,
-                          activeIcon: Icons.person_rounded,
-                          inactiveIcon: Icons.person_outlined,
-                          label: 'Profile',
-                          activeColor: navActiveColor,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             );
           },
         );

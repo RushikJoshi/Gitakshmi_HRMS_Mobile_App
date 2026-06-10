@@ -293,6 +293,8 @@ class RolePermissionHelper extends ChangeNotifier {
     ],
   };
 
+  final Map<String, Map<String, dynamic>> apiResponses = {};
+
   // State Lists
   List<RoleModel> _roles = [];
   List<EmployeeModel> _employees = [];
@@ -1417,145 +1419,81 @@ class RolePermissionHelper extends ChangeNotifier {
     final emp = _employees.firstWhere((e) => e.id == empId, orElse: () => _employees.first);
     return EmployeeProfileModel(
       employeeId: emp.id,
-      photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+      photoUrl: '',
       firstName: emp.name.split(' ').first,
-      middleName: 'Kumar',
-      lastName: emp.name.split(' ').length > 1 ? emp.name.split(' ')[1] : 'Singh',
-      gender: 'Male',
-      dob: '15-Aug-1995',
-      bloodGroup: 'O+',
-      maritalStatus: 'Single',
-      nationality: 'Indian',
-      religion: 'Hindu',
-      aadharNumber: '1234 5678 9012',
-      panNumber: 'ABCDE1234F',
-      passportNumber: 'Z1234567',
-      drivingLicenseNumber: 'GJ-05-123456789',
-      mobileNumber: '+91 98765 43210',
+      middleName: '',
+      lastName: emp.name.split(' ').length > 1 ? emp.name.split(' ')[1] : '',
+      gender: '',
+      dob: '',
+      bloodGroup: '',
+      maritalStatus: '',
+      nationality: '',
+      religion: '',
+      aadharNumber: '',
+      panNumber: '',
+      passportNumber: '',
+      drivingLicenseNumber: '',
+      mobileNumber: '',
       alternateMobile: '',
-      personalEmail: '${emp.id}@gmail.com',
-      officialEmail: '${emp.id}@gitakshmi.com',
+      personalEmail: '',
+      officialEmail: '',
       employeeCode: emp.id.toUpperCase().replaceAll('EMP_', 'GIT-'),
-      biometricId: 'BIO_${emp.id.toUpperCase()}',
-      faceRegistrationStatus: 'Registered',
+      biometricId: '',
+      faceRegistrationStatus: '',
       addressDetails: AddressDetails(
-        currentLine1: 'Flat 101, Sunrise Apartments',
-        currentLine2: 'Adajan Road',
-        currentCity: 'Surat',
-        currentState: 'Gujarat',
-        currentCountry: 'India',
-        currentPincode: '395009',
-        permanentLine1: 'Flat 101, Sunrise Apartments',
-        permanentLine2: 'Adajan Road',
-        permanentCity: 'Surat',
-        permanentState: 'Gujarat',
-        permanentCountry: 'India',
-        permanentPincode: '395009',
-        isPermanentSameAsCurrent: true,
+        currentLine1: '',
+        currentLine2: '',
+        currentCity: '',
+        currentState: '',
+        currentCountry: '',
+        currentPincode: '',
+        permanentLine1: '',
+        permanentLine2: '',
+        permanentCity: '',
+        permanentState: '',
+        permanentCountry: '',
+        permanentPincode: '',
+        isPermanentSameAsCurrent: false,
       ),
-      educationRecords: [
-        EducationRecord(
-          qualification: 'Bachelor',
-          course: 'B.Tech',
-          specialization: 'Computer Science',
-          university: 'GTU',
-          institute: 'SCET Surat',
-          board: 'State Board',
-          passingYear: '2018',
-          percentage: '82%',
-          grade: 'A',
-          cgpa: '8.2',
-          attachedDoc: 'Degree_Certificate_BTech.pdf',
-        )
-      ],
-      experienceRecords: [
-        ExperienceRecord(
-          companyName: 'TechSolutions Pvt Ltd',
-          designation: 'Software Developer',
-          department: 'Engineering',
-          industry: 'IT Services',
-          joiningDate: '01-Jul-2018',
-          relievingDate: '15-May-2022',
-          totalExperience: '3 Years 10 Months',
-          currentSalary: 'INR 4,50,000 LPA',
-          reasonForLeaving: 'Better growth opportunities.',
-          attachedDoc: 'Relieving_Letter_TechSolutions.pdf',
-        )
-      ],
-      familyMembers: [
-        FamilyMember(
-          name: 'Ramesh Singh',
-          relation: 'Father',
-          dob: '10-May-1965',
-          occupation: 'Business',
-        )
-      ],
-      emergencyContacts: [
-        EmergencyContact(
-          name: 'Ramesh Singh',
-          relation: 'Father',
-          mobileNumber: '+91 98765 00001',
-          alternateNumber: '',
-          address: 'Flat 101, Sunrise Apartments, Adajan Road, Surat',
-        )
-      ],
+      educationRecords: [],
+      experienceRecords: [],
+      familyMembers: [],
+      emergencyContacts: [],
       bankDetails: BankDetails(
-        bankName: 'State Bank of India',
-        accountHolderName: emp.name,
-        accountNumber: '123456789012',
-        ifscCode: 'SBIN0001234',
-        branchName: 'Adajan Branch',
-        upiId: '${emp.id}@oksbi',
+        bankName: '',
+        accountHolderName: '',
+        accountNumber: '',
+        ifscCode: '',
+        branchName: '',
+        upiId: '',
       ),
-      assignedAssets: [
-        AssignedAsset(
-          assetName: 'Dell Latitude Laptop',
-          serialNumber: 'DL-8472-MX',
-          issueDate: '01-Jun-2022',
-          returnDate: '--',
-        ),
-        AssignedAsset(
-          assetName: 'RFID Access Card',
-          serialNumber: 'RFID-990-21',
-          issueDate: '01-Jun-2022',
-          returnDate: '--',
-        )
-      ],
+      assignedAssets: [],
       attendanceSummary: AttendanceSummary(
-        presentDays: 20,
-        absentDays: 1,
-        leaveDays: 2,
-        lateDays: 2,
-        otHours: 4.5,
-        currentMonthHours: 168.0,
+        presentDays: 0,
+        absentDays: 0,
+        leaveDays: 0,
+        lateDays: 0,
+        otHours: 0.0,
+        currentMonthHours: 0.0,
       ),
       leaveSummary: LeaveSummary(
-        availableLeave: 12,
-        usedLeave: 5,
-        pendingRequests: 1,
-        approvedRequests: 3,
+        availableLeave: 0,
+        usedLeave: 0,
+        pendingRequests: 0,
+        approvedRequests: 0,
       ),
       payrollSummary: PayrollSummary(
-        currentSalary: 'INR 50,000',
-        ctc: 'INR 6,50,000 LPA',
-        lastPayslip: 'Payslip_May_2026.pdf',
-        taxDetails: 'Form 16 Tax Deducted Source.',
+        currentSalary: '',
+        ctc: '',
+        lastPayslip: '',
+        taxDetails: '',
       ),
-      documents: [
-        ProfileDocument(
-          id: 'doc_aadhaar',
-          category: 'Aadhar',
-          name: 'Aadhaar_Card.pdf',
-          uploadedBy: 'System',
-          uploadedAt: '01-Jun-2022 10:00 AM',
-          filePath: 'mock/docs/Aadhaar_Card.pdf',
-        )
-      ],
+      documents: [],
       settings: ProfileSettings(
         changePassword: true,
         changePin: false,
-        enableBiometric: true,
-        enableFaceLogin: true,
+        enableBiometric: false,
+        enableFaceLogin: false,
         attendanceNotifications: true,
         approvalNotifications: true,
         leaveNotifications: true,
@@ -1564,14 +1502,7 @@ class RolePermissionHelper extends ChangeNotifier {
         contactVisibility: 'Public',
         documentVisibility: 'Private',
       ),
-      timelineActivities: [
-        TimelineActivity(
-          title: 'Joined Company',
-          description: 'Successfully onboarded.',
-          timestamp: '01-Jun-2022 09:30 AM',
-          category: 'Career',
-        )
-      ],
+      timelineActivities: [],
     );
   }
 
@@ -1580,8 +1511,10 @@ class RolePermissionHelper extends ChangeNotifier {
     final idx = _profiles.indexWhere((p) => p.employeeId == employeeId);
     if (idx != -1) {
       _profiles[idx] = updated;
-      notifyListeners();
+    } else {
+      _profiles.add(updated);
     }
+    notifyListeners();
   }
 
   // Request change for approval-based fields

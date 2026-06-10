@@ -18,54 +18,144 @@ class ProfileEducationTab extends StatelessWidget {
     required this.openMockDocViewer,
   });
 
+  Widget _buildInfoTile(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Text(
+              value.isNotEmpty ? value : '-',
+              textAlign: TextAlign.end,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE4E7EC)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Icon(icon, color: const Color(0xFF7544FC), size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: Color(0xFFF2F4F7)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ...profile.educationRecords.map((edu) {
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        edu.qualification,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.textPrimary),
-                      ),
-                      Icon(Icons.school_rounded, color: primaryColor, size: 20),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text('Course: ${edu.course} (${edu.specialization})', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  Text('Institute: ${edu.institute}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  Text('University: ${edu.university} (${edu.passingYear})', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  Text('Percentage / CGPA: ${edu.percentage}', style: const TextStyle(fontSize: 12, color: Colors.green, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  TextButton.icon(
-                    onPressed: () => openMockDocViewer(context, edu.attachedDoc, 'Marksheet & Certificates'),
-                    icon: Icon(Icons.attach_file_rounded, size: 16, color: primaryColor),
-                    label: Text(edu.attachedDoc, style: TextStyle(color: primaryColor, fontSize: 12)),
-                  ),
-                ],
-              ),
+        if (profile.educationRecords.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            alignment: Alignment.center,
+            child: const Column(
+              children: [
+                Icon(Icons.school_outlined, size: 48, color: Colors.grey),
+                SizedBox(height: 12),
+                Text('No education records found.', style: TextStyle(color: Colors.grey, fontSize: 14)),
+              ],
             ),
-          );
-        }),
+          )
+        else
+          ...profile.educationRecords.map((edu) {
+            final String title = edu.qualification.isNotEmpty
+                ? '${edu.qualification} (${edu.course.isNotEmpty ? edu.course : edu.specialization})'
+                : 'Qualification Details';
+            return _buildSectionCard(
+              title: title,
+              icon: Icons.school_rounded,
+              children: [
+                _buildInfoTile('Qualification', edu.qualification),
+                _buildInfoTile('Course', edu.course),
+                _buildInfoTile('Specialization', edu.specialization),
+                _buildInfoTile('Institute / College', edu.institute),
+                _buildInfoTile('University / Board', edu.university.isNotEmpty ? edu.university : edu.board),
+                _buildInfoTile('Passing Year', edu.passingYear),
+                _buildInfoTile('Grade', edu.grade),
+                _buildInfoTile('CGPA / Percentage', edu.cgpa.isNotEmpty ? '${edu.cgpa} (${edu.percentage})' : edu.percentage),
+                if (edu.attachedDoc.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero),
+                        onPressed: () => openMockDocViewer(context, edu.attachedDoc, 'Marksheet & Certificates'),
+                        icon: Icon(Icons.attach_file_rounded, size: 16, color: primaryColor),
+                        label: Text(edu.attachedDoc, style: TextStyle(color: primaryColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }),
         if (isHR)
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(side: BorderSide(color: primaryColor)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Mock UI: Clicked Add Education Record')),
-              );
-            },
-            icon: Icon(Icons.add_circle_outline_rounded, color: primaryColor),
-            label: Text('Add Qualification', style: TextStyle(color: primaryColor)),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: primaryColor),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Mock UI: Clicked Add Education Record')),
+                );
+              },
+              icon: Icon(Icons.add_circle_outline_rounded, color: primaryColor),
+              label: Text('Add Qualification', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
+            ),
           )
       ],
     );

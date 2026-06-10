@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
-import 'package:gitakshmi_hrms_app/core/widgets/dropdown/app_dropdown_field.dart';
 
 class ProfileSettingsTab extends StatelessWidget {
   final EmployeeProfileModel profile;
@@ -39,7 +38,7 @@ class ProfileSettingsTab extends StatelessWidget {
             });
           },
           title: const Text('Enable Fingerprint Biometrics', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-          activeColor: primaryColor,
+          activeThumbColor: primaryColor,
           contentPadding: EdgeInsets.zero,
         ),
         SwitchListTile(
@@ -50,7 +49,7 @@ class ProfileSettingsTab extends StatelessWidget {
             });
           },
           title: const Text('Enable Anti-Spoof Face Login', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-          activeColor: primaryColor,
+          activeThumbColor: primaryColor,
           contentPadding: EdgeInsets.zero,
         ),
         SwitchListTile(
@@ -61,7 +60,7 @@ class ProfileSettingsTab extends StatelessWidget {
             });
           },
           title: const Text('Shift & Punch Reminders', style: TextStyle(fontSize: 12)),
-          activeColor: primaryColor,
+          activeThumbColor: primaryColor,
           contentPadding: EdgeInsets.zero,
         ),
         SwitchListTile(
@@ -72,7 +71,7 @@ class ProfileSettingsTab extends StatelessWidget {
             });
           },
           title: const Text('Approvals Pending Alerts', style: TextStyle(fontSize: 12)),
-          activeColor: primaryColor,
+          activeThumbColor: primaryColor,
           contentPadding: EdgeInsets.zero,
         ),
         
@@ -82,7 +81,7 @@ class ProfileSettingsTab extends StatelessWidget {
         const Text('White-Label SaaS Branding', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary)),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: config.companyName,
+          initialValue: config.companyName,
           decoration: InputDecoration(
             isDense: true,
             labelText: 'Tenant Context Switcher',
@@ -124,7 +123,7 @@ class ProfileSettingsTab extends StatelessWidget {
               });
             },
             title: Text(permLabel, style: const TextStyle(fontSize: 11)),
-            activeColor: primaryColor,
+            activeThumbColor: primaryColor,
             contentPadding: EdgeInsets.zero,
           );
         }),

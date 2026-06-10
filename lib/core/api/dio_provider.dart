@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:gitakshmi_hrms_app/core/api/api_constants.dart';
+import 'package:gitakshmi_hrms_app/core/navigation/navigation_service.dart';
+import 'package:gitakshmi_hrms_app/features/auth/presentation/pages/login_page.dart';
+import 'package:gitakshmi_hrms_app/core/storage/preference/preference_manager.dart';
 
 class DioProvider {
   static Dio? _dio;
@@ -42,7 +45,7 @@ class DioProvider {
           }
           return handler.next(response);
         },
-        onError: (DioException e, handler) {
+        onError: (DioException e, handler) async {
           debugPrint('<-- HTTP ERROR: ${e.response?.statusCode} ${e.requestOptions.uri}');
           debugPrint('Error Message: ${e.message}');
           if (e.response?.data != null) {
@@ -53,6 +56,15 @@ class DioProvider {
               debugPrint('Error Response: ${e.response!.data}');
             }
           }
+
+          if (e.response?.statusCode == 401) {
+            await PreferenceManager.clearToken();
+            NavigationService.navigatorKey.currentState?.pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const LoginPage()),
+              (route) => false,
+            );
+          }
+
           return handler.next(e);
         },
       ));

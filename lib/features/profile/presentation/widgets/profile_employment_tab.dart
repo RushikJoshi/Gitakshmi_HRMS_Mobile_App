@@ -24,9 +24,60 @@ class ProfileEmploymentTab extends StatelessWidget {
           const SizedBox(width: 20),
           Expanded(
             child: Text(
-              value,
+              value.isNotEmpty ? value : '-',
               textAlign: TextAlign.end,
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE4E7EC)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Icon(icon, color: const Color(0xFF7544FC), size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: Color(0xFFF2F4F7)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: children,
             ),
           ),
         ],
@@ -37,27 +88,54 @@ class ProfileEmploymentTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final helper = RolePermissionHelper.instance;
-    final emp = helper.employees.firstWhere((e) => e.id == profile.employeeId);
+    final apiData = helper.apiResponses[profile.employeeId] ?? {};
+
+    final code = apiData['employee_code'] ?? apiData['employeeCode'] ?? apiData['code'] ?? apiData['employeeId'] ?? '-';
+    final designation = apiData['designation'] ?? apiData['position'] ?? apiData['role'] ?? '-';
+    final department = apiData['department'] ?? apiData['dept'] ?? '-';
+    final empCategory = apiData['employment_category'] ?? apiData['employment_type'] ?? apiData['type'] ?? apiData['employeeType'] ?? '-';
+    final joiningDate = apiData['joiningDate'] ?? apiData['joining_date'] ?? apiData['date_of_joining'] ?? apiData['joining'] ?? '-';
+    final workMode = apiData['workMode'] ?? apiData['work_mode'] ?? '-';
+    
+    final shiftTiming = apiData['shift'] ?? apiData['shift_timing'] ?? apiData['timings'] ?? '-';
+    final weekOff = apiData['week_off'] ?? apiData['week_off_day'] ?? apiData['weekoff'] ?? '-';
+
+    final basicSalary = apiData['salary'] ?? apiData['monthly_salary'] ?? apiData['basic_salary'] ?? '-';
+    final ctc = apiData['ctc'] ?? apiData['annual_ctc'] ?? '-';
+    final taxDetails = apiData['tax_details'] ?? apiData['tax'] ?? '-';
 
     return Column(
       children: [
-        _buildInfoTile('Employee Code', profile.employeeCode),
-        _buildInfoTile('Reporting Manager', 'Riya Sharma (TL)'),
-        _buildInfoTile('Branch Assignment', 'Surat Regional HQs'),
-        _buildInfoTile('Employment Category', 'Permanent Full-Time'),
-        _buildInfoTile('Standard Shift timing', '09:00 AM to 06:00 PM'),
-        _buildInfoTile('Designated Week Off', 'Sunday'),
-        _buildInfoTile('Current System Role', emp.roleId == 'r_admin' ? 'Admin Superuser' : emp.roleId == 'r_hr' ? 'HR Specialist' : emp.roleId == 'r_tl' ? 'Team Lead' : 'Employee Staff'),
-        if (canViewPayroll) ...[
-          const SizedBox(height: 16),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text('Compensation Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey)),
+        _buildSectionCard(
+          title: 'Employment Details',
+          icon: Icons.business_center_rounded,
+          children: [
+            _buildInfoTile('Employee Code', code.toString()),
+            _buildInfoTile('Designated Role', designation.toString()),
+            _buildInfoTile('Department', department.toString()),
+            _buildInfoTile('Employment Category', empCategory.toString()),
+            _buildInfoTile('Work Mode', workMode.toString()),
+            _buildInfoTile('Date of Joining', joiningDate.toString()),
+          ],
+        ),
+        _buildSectionCard(
+          title: 'Shift Details',
+          icon: Icons.schedule_rounded,
+          children: [
+            _buildInfoTile('Standard Shift timing', shiftTiming.toString()),
+            _buildInfoTile('Designated Week Off', weekOff.toString()),
+          ],
+        ),
+        if (canViewPayroll)
+          _buildSectionCard(
+            title: 'Compensation Details',
+            icon: Icons.payments_rounded,
+            children: [
+              _buildInfoTile('Basic Monthly Salary', basicSalary.toString()),
+              _buildInfoTile('Calculated Annual CTC', ctc.toString()),
+              _buildInfoTile('Income Tax Summary', taxDetails.toString()),
+            ],
           ),
-          _buildInfoTile('Basic Monthly Salary', profile.payrollSummary.currentSalary),
-          _buildInfoTile('Calculated Annual CTC', profile.payrollSummary.ctc),
-          _buildInfoTile('Income Tax Summary', profile.payrollSummary.taxDetails),
-        ]
       ],
     );
   }

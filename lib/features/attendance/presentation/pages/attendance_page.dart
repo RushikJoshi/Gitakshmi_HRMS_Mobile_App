@@ -5,8 +5,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_face_liveness/flutter_face_liveness.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
+import 'package:gitakshmi_hrms_app/features/attendance/attendance_injection.dart';
+import 'package:gitakshmi_hrms_app/features/attendance/presentation/bloc/attendance/attendance_bloc.dart';
+import 'package:gitakshmi_hrms_app/features/attendance/presentation/bloc/attendance/attendance_event.dart';
+import 'package:gitakshmi_hrms_app/features/attendance/presentation/bloc/attendance/attendance_state.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public entry-point
@@ -18,7 +23,10 @@ Future<void> showPunchInSheet(BuildContext context) {
     backgroundColor: Colors.transparent,
     isDismissible: true,
     enableDrag: true,
-    builder: (_) => const _PunchInBottomSheet(),
+    builder: (_) => BlocProvider<AttendanceBloc>(
+      create: (context) => AttendanceBloc(repository: attendanceRepository),
+      child: const _PunchInBottomSheet(),
+    ),
   );
 }
 
@@ -87,6 +95,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
   double? _lastLat;
   double? _lastLng;
   String _gpsAccuracy = 'Medium';
+  double _accuracyVal = 10.0;
   bool _locationError = false;
   DateTime? _locationTime;
 
@@ -148,6 +157,7 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
           _lastLng = pos.longitude;
           _locationAddress = 'Resolving current location...';
           _locationTime = DateTime.now();
+          _accuracyVal = pos.accuracy;
           _gpsAccuracy = pos.accuracy < 10
               ? 'High'
               : pos.accuracy < 35
@@ -238,35 +248,25 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
   // ── Navigate to face scanner (full-screen route) ──────────────────────────
   Future<void> _goToFaceScanner() async {
     _autoCloseTimer?.cancel();
+    final bloc = context.read<AttendanceBloc>();
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => const FaceScannerPage(),
+        builder: (_) => FaceScannerPage(
+          onFaceScanned: (base64Image) {
+            bloc.add(VerifyAttendanceEvent(
+              base64Image: base64Image,
+              lat: _lastLat ?? 0.0,
+              lng: _lastLng ?? 0.0,
+              accuracy: _accuracyVal,
+              actionType: 'IN',
+            ));
+          },
+        ),
       ),
     );
     if (!mounted) return;
-    if (result == true) {
-      // Success — show success state briefly then close sheet
-      Navigator.of(context).pop();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white),
-                SizedBox(width: 10),
-                Text(
-                  'Punched In Successfully!',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            backgroundColor: Color(0xFF0FBE7C),
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
-    } else {
+    if (result != true) {
       // Failed / cancelled — restart auto-close
       _startAutoClose();
     }
@@ -277,11 +277,72 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
   // ─────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return switch (_step) {
-      _Step.verifyingLocation => _sheetWrap(_buildVerifying()),
-      _Step.inRange => _sheetWrap(_buildInRange()),
-      _Step.outOfRange => _buildOutOfRange(), // full DraggableSheet
-    };
+    return BlocListener<AttendanceBloc, AttendanceState>(
+      listener: (context, state) {
+        if (state is AttendanceSuccess) {
+          Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      state.message,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF0FBE7C),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        } else if (state is AttendanceFailure) {
+          _startAutoClose();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.error_outline_rounded, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      state.message,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.redAccent,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      },
+      child: BlocBuilder<AttendanceBloc, AttendanceState>(
+        builder: (context, state) {
+          if (state is AttendanceLoading) {
+            return _sheetWrap(
+              SizedBox(
+                height: 300.h,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue500),
+                  ),
+                ),
+              ),
+            );
+          }
+          return switch (_step) {
+            _Step.verifyingLocation => _sheetWrap(_buildVerifying()),
+            _Step.inRange => _sheetWrap(_buildInRange()),
+            _Step.outOfRange => _buildOutOfRange(),
+          };
+        },
+      ),
+    );
   }
 
   Widget _sheetWrap(Widget child) {
@@ -974,7 +1035,9 @@ class _PunchInBottomSheetState extends State<_PunchInBottomSheet> {
 // FaceScannerPage — full-screen, hosts FlutterFaceLiveness properly
 // ─────────────────────────────────────────────────────────────────────────────
 class FaceScannerPage extends StatelessWidget {
-  const FaceScannerPage({super.key});
+  final void Function(String base64Image)? onFaceScanned;
+
+  const FaceScannerPage({super.key, this.onFaceScanned});
 
   @override
   Widget build(BuildContext context) {
@@ -996,6 +1059,9 @@ class FaceScannerPage extends StatelessWidget {
               themeMode: ThemeMode.dark,
             ),
             onSuccess: (result) {
+              if (onFaceScanned != null && result.base64Image != null) {
+                onFaceScanned!(result.base64Image!);
+              }
               // Pop back with true = success
               Navigator.of(context).pop(true);
             },
@@ -1015,7 +1081,7 @@ class FaceScannerPage extends StatelessWidget {
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
                         fullscreenDialog: true,
-                        builder: (_) => const FaceScannerPage(),
+                        builder: (_) => FaceScannerPage(onFaceScanned: onFaceScanned),
                       ),
                     );
                   },

@@ -4,6 +4,7 @@ import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
 import 'package:gitakshmi_hrms_app/features/splash/presentation/pages/splash_page.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:gitakshmi_hrms_app/core/navigation/navigation_service.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -42,6 +43,7 @@ class App extends StatelessWidget {
             );
 
             return MaterialApp(
+              navigatorKey: NavigationService.navigatorKey,
               title: config.appName,
               theme: dynamicTheme,
               home: const SplashPage(),

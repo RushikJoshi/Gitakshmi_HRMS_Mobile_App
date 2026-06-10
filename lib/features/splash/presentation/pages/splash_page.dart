@@ -3,9 +3,33 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
 import 'package:gitakshmi_hrms_app/core/helpers/responsive_helper.dart';
 import 'package:gitakshmi_hrms_app/features/onboarding/presentation/pages/onboarding_screen.dart';
+import 'package:gitakshmi_hrms_app/core/storage/preference/preference_manager.dart';
+import 'package:gitakshmi_hrms_app/features/dashboard/presentation/pages/dashboard_page.dart';
 
-class SplashPage extends StatelessWidget {
+class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final token = await PreferenceManager.getToken();
+    if (token != null && token.trim().isNotEmpty) {
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardPage()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

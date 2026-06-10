@@ -16,5 +16,31 @@ abstract class ApiClient {
 
   @GET(ApiEndpoints.payslips)
   Future<dynamic> getPayslips(@Header('Authorization') String token);
+
+  @GET(ApiEndpoints.profile)
+  @Headers(<String, dynamic>{
+    "Origin": "https://hrms.gitakshmi.com",
+  })
+  Future<dynamic> getProfile(@Header('Authorization') String token);
+
+  @POST(ApiEndpoints.registerFace)
+  @Headers(<String, dynamic>{
+    "Origin": "https://hrms.gitakshmi.com",
+    "Content-Type": "application/json",
+  })
+  Future<dynamic> registerFace(
+    @Header('Authorization') String token,
+    @Body() Map<String, dynamic> body,
+  );
+
+  @POST(ApiEndpoints.verifyAttendance)
+  @Headers(<String, dynamic>{
+    "Origin": "https://hrms.gitakshmi.com",
+    "Content-Type": "application/json",
+  })
+  Future<dynamic> verifyAttendance(
+    @Header('Authorization') String token,
+    @Body() Map<String, dynamic> body,
+  );
 }
 
