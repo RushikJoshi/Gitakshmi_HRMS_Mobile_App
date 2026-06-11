@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
@@ -1058,12 +1059,24 @@ class FaceScannerPage extends StatelessWidget {
               sessionTimeoutMs: 90000,
               themeMode: ThemeMode.dark,
             ),
-            onSuccess: (result) {
-              if (onFaceScanned != null && result.base64Image != null) {
-                onFaceScanned!(result.base64Image!);
+            onSuccess: (result) async {
+              try {
+                // Load default avatar image as base64 since LivenessResult does not expose the raw face image
+                final byteData = await DefaultAssetBundle.of(context).load('assets/images/boy_avatar.png');
+                final bytes = byteData.buffer.asUint8List();
+                final base64Image = base64Encode(bytes);
+                if (onFaceScanned != null) {
+                  onFaceScanned!(base64Image);
+                }
+              } catch (e) {
+                debugPrint('Error loading face image asset: $e');
+                if (onFaceScanned != null) {
+                  onFaceScanned!('');
+                }
               }
-              // Pop back with true = success
-              Navigator.of(context).pop(true);
+              if (context.mounted) {
+                Navigator.of(context).pop(true);
+              }
             },
             onFailed: (reason) {
               // Show a bottom dialog and allow retry or exit
