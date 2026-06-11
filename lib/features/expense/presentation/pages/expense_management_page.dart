@@ -1,4 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:gitakshmi_hrms_app/core/constants/app_colors.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/role_permission_helper.dart';
+import 'package:gitakshmi_hrms_app/core/helpers/saas_branding_helper.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/expense_dashboard_tab.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/my_expenses_tab.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/new_claim_tab.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/reimbursements_tab.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/advance_tab.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/expense_reports_tab.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/expense_policies_tab.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/expense_approvals_tab.dart';
+import 'package:gitakshmi_hrms_app/features/expense/presentation/widgets/history_tab.dart';
 import 'add_expense_page.dart';
 
 class ExpenseManagementPage extends StatefulWidget {
@@ -8,152 +20,234 @@ class ExpenseManagementPage extends StatefulWidget {
   State<ExpenseManagementPage> createState() => _ExpenseManagementPageState();
 }
 
-class _ExpenseManagementPageState extends State<ExpenseManagementPage> {
-  // Current active tab index: 0 = Review, 1 = Approved, 2 = Rejected
-  int _activeTabIndex = 0;
-
-  // Mock list of expenses matching the screenshot
-  final List<ExpenseSummaryItem> _expenses = [
-    // Review Items
-    ExpenseSummaryItem(
-      date: "27 September 2024",
-      type: "E-Learning",
-      amount: 55,
-      status: ExpenseStatus.review,
-    ),
-    ExpenseSummaryItem(
-      date: "24 September 2024",
-      type: "E-Learning",
-      amount: 55,
-      status: ExpenseStatus.review,
-    ),
-    ExpenseSummaryItem(
-      date: "21 September 2024",
-      type: "E-Learning",
-      amount: 55,
-      status: ExpenseStatus.review,
-    ),
-    // Approved Items
-    ExpenseSummaryItem(
-      date: "18 September 2024",
-      type: "E-Learning",
-      amount: 55,
-      status: ExpenseStatus.approved,
-      approvedDate: "19 Sept 2024",
-      approvedBy: "Elaine",
-    ),
-    ExpenseSummaryItem(
-      date: "14 September 2024",
-      type: "E-Learning",
-      amount: 55,
-      status: ExpenseStatus.approved,
-      approvedDate: "19 Sept 2024",
-      approvedBy: "Elaine",
-    ),
-    // Rejected Items
-    ExpenseSummaryItem(
-      date: "10 September 2024",
-      type: "E-Learning",
-      amount: 55,
-      status: ExpenseStatus.rejected,
-      approvedDate: "11 Sept 2024",
-      approvedBy: "Elaine",
-    ),
-    ExpenseSummaryItem(
-      date: "05 September 2024",
-      type: "E-Learning",
-      amount: 55,
-      status: ExpenseStatus.rejected,
-      approvedDate: "06 Sept 2024",
-      approvedBy: "Elaine",
-    ),
-  ];
+class _ExpenseManagementPageState extends State<ExpenseManagementPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   @override
-  Widget build(BuildContext context) {
-    // Filter list dynamically based on the active tab
-    final filteredExpenses = _expenses.where((expense) {
-      if (_activeTabIndex == 0) return expense.status == ExpenseStatus.review;
-      if (_activeTabIndex == 1) return expense.status == ExpenseStatus.approved;
-      return expense.status == ExpenseStatus.rejected;
-    }).toList();
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 9, vsync: this);
+    _tabController.addListener(() {
+      setState(() {});
+    });
+  }
 
-    // Counts for badges
-    final reviewCount = _expenses.where((e) => e.status == ExpenseStatus.review).length;
-    final approvedCount = _expenses.where((e) => e.status == ExpenseStatus.approved).length;
-    final rejectedCount = _expenses.where((e) => e.status == ExpenseStatus.rejected).length;
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
-    const Color fabPurple = Color(0xff6938EF);
+  void _showClaimDetailsDialog(BuildContext context, ExpenseClaimModel claim) {
+    final primaryColor = SaaSBrandingHelper.instance.configNotifier.value.primaryColor;
+    final emp = RolePermissionHelper.instance.employees.firstWhere(
+      (e) => e.id == claim.employeeId,
+      orElse: () => RolePermissionHelper.instance.employees.first,
+    );
+    final department = emp.dept;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FC),
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
-        backgroundColor: fabPurple,
-        onPressed: () async {
-          final result = await Navigator.push<ExpenseSummaryItem>(
-            context,
-            MaterialPageRoute(builder: (_) => const ApplyExpenseScreen()),
-          );
-          if (result != null) {
-            setState(() {
-              _expenses.insert(0, result);
-              _activeTabIndex = 0; // switch to Review tab
-            });
-          }
-        },
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Overlapping Header and Stats Card using a Stack
-            SizedBox(
-              height: 320,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  const ExpenseHeaderCard(),
-                  Positioned(
-                    top: 170, // Overlaps by 60px since Header is 230px
-                    left: 16,
-                    right: 16,
-                    child: const ExpenseStatsCard(),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  claim.title,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: (claim.status == 'Approved' || claim.status == 'Paid' ? Colors.green : Colors.orange).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  claim.status,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: claim.status == 'Approved' || claim.status == 'Paid' ? Colors.green : Colors.orange,
                   ),
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _detailRow('Employee', claim.employeeName),
+                  _detailRow('Department', department),
+                  _detailRow('Submitted Date', claim.submittedDate),
+                  _detailRow('Total Claimed', '₹${claim.totalClaimed.toStringAsFixed(0)}'),
+                  if (claim.approvedAmount > 0)
+                    _detailRow('Approved Amount', '₹${claim.approvedAmount.toStringAsFixed(0)}', isHighlight: true),
+                  const Divider(height: 24),
+                  const Text('Line Items', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  ...claim.lineItems.map((item) => Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    color: Colors.grey.shade50,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(item.category, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: primaryColor)),
+                              Text('₹${item.amount.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            ],
+                          ),
+                          if (item.description.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(item.description, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                          ],
+                          const SizedBox(height: 4),
+                          Text(item.date, style: TextStyle(fontSize: 10, color: Colors.grey.shade400)),
+                        ],
+                      ),
+                    ),
+                  )),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-            // Horizontal Tab Selector
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ExpenseTabSelector(
-                activeIndex: _activeTabIndex,
-                reviewCount: reviewCount,
-                approvedCount: approvedCount,
-                rejectedCount: rejectedCount,
-                onTabSelected: (index) {
-                  setState(() {
-                    _activeTabIndex = index;
-                  });
+  Widget _detailRow(String label, String value, {bool isHighlight = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: isHighlight ? Colors.green : Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final helper = RolePermissionHelper.instance;
+
+    return AnimatedBuilder(
+      animation: helper,
+      builder: (context, _) {
+        final config = SaaSBrandingHelper.instance.configNotifier.value;
+        final primaryColor = config.primaryColor;
+
+        // Dynamic Role permissions
+        final activeEmpId = helper.activeEmployeeId;
+        final canApprove = helper.activeEmployee.roleId == 'r_admin' ||
+            helper.activeEmployee.roleId == 'r_finance' ||
+            helper.activeEmployee.roleId == 'r_manager' ||
+            helper.hasPermission(activeEmpId, 'approve_expense');
+        final canFinance = helper.activeEmployee.roleId == 'r_admin' ||
+            helper.activeEmployee.roleId == 'r_finance';
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F9FC),
+          appBar: AppBar(
+            title: const Text('Expense Management'),
+            bottom: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              indicatorColor: primaryColor,
+              labelColor: primaryColor,
+              unselectedLabelColor: AppColors.textSecondary,
+              tabs: const [
+                Tab(icon: Icon(Icons.dashboard_rounded), text: 'Summary'),
+                Tab(icon: Icon(Icons.receipt_long_rounded), text: 'My Expenses'),
+                Tab(icon: Icon(Icons.add_circle_outline_rounded), text: 'New Claim'),
+                Tab(icon: Icon(Icons.payments_rounded), text: 'Reimbursements'),
+                Tab(icon: Icon(Icons.account_balance_wallet_rounded), text: 'Advances'),
+                Tab(icon: Icon(Icons.fact_check_rounded), text: 'Approvals'),
+                Tab(icon: Icon(Icons.analytics_rounded), text: 'Reports'),
+                Tab(icon: Icon(Icons.policy_rounded), text: 'Policies'),
+                Tab(icon: Icon(Icons.history_rounded), text: 'History'),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              ExpenseDashboardTab(
+                helper: helper,
+                primaryColor: primaryColor,
+                onTapClaim: (claim) => _showClaimDetailsDialog(context, claim),
+              ),
+              MyExpensesTab(
+                helper: helper,
+                primaryColor: primaryColor,
+                onTapClaim: (claim) => _showClaimDetailsDialog(context, claim),
+              ),
+              NewClaimTab(
+                helper: helper,
+                primaryColor: primaryColor,
+                onSubmitClaimSuccess: () {
+                  _tabController.animateTo(1); // Switch to My Expenses
                 },
               ),
-            ),
-            const SizedBox(height: 20),
-
-            // Expense Items List
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ExpenseCardList(
-                expenses: filteredExpenses,
-                activeTabIndex: _activeTabIndex,
+              ReimbursementsTab(
+                helper: helper,
+                canFinance: canFinance,
+                primaryColor: primaryColor,
               ),
-            ),
-            const SizedBox(height: 30), // bottom spacing
-          ],
-        ),
-      ),
+              AdvanceTab(
+                helper: helper,
+                primaryColor: primaryColor,
+              ),
+              ExpenseApprovalsTab(
+                helper: helper,
+                canApprove: canApprove,
+                canFinance: canFinance,
+                primaryColor: primaryColor,
+              ),
+              ExpenseReportsTab(
+                helper: helper,
+                primaryColor: primaryColor,
+              ),
+              ExpensePoliciesTab(
+                helper: helper,
+                primaryColor: primaryColor,
+              ),
+              HistoryTab(
+                helper: helper,
+                primaryColor: primaryColor,
+                onTapClaim: (claim) => _showClaimDetailsDialog(context, claim),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
